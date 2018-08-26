@@ -1,0 +1,203 @@
+#!/usr/bin/env perl6
+use lib '.' ;
+use PacNet::RAPI ;
+use Data::Dump::Tree ;
+use JSON::Fast ;
+
+sub MAIN( :$token = %*ENV<PN_TOKEN>,
+          :$plan  = <baremetal_0 baremetal_1>, 
+          :$site,
+     Bool :$cache = True) {
+
+    my $h = 4;
+    my %smp := from-json q:to<EOJ> ;
+               {
+                 "spot_market_prices" : {
+                   "dfw1" : {
+                     "baremetal_1e" : {
+                       "price" : 0.08
+                     }
+                   },
+                   "ams1" : {
+                     "m2.xlarge.x86" : {
+                       "price" : 20.01
+                     },
+                     "baremetal_3" : {
+                       "price" : 17.51
+                     },
+                     "baremetal_2a2" : {
+                       "price" : 5.01
+                     },
+                     "baremetal_2" : {
+                       "price" : 0.4
+                     },
+                     "baremetal_0" : {
+                       "price" : 0.03
+                     },
+                     "baremetal_s" : {
+                       "price" : 15.01
+                     },
+                     "c2.medium.x86" : {
+                       "price" : 0.3
+                     },
+                     "baremetal_1" : {
+                       "price" : 0.25
+                     },
+                     "baremetal_2a" : {
+                       "price" : 5.01
+                     }
+                   },
+                   "yyz1" : {
+                     "baremetal_1e" : {
+                       "price" : 0.08
+                     }
+                   },
+                   "ord1" : {
+                     "baremetal_1e" : {
+                       "price" : 4.01
+                     }
+                   },
+                   "atl1" : {
+                     "baremetal_1e" : {
+                       "price" : 0.08
+                     }
+                   },
+                   "nrt1" : {
+                     "m2.xlarge.x86" : {
+                       "price" : 0.4
+                     },
+                     "baremetal_2a2" : {
+                       "price" : 5.01
+                     },
+                     "baremetal_2" : {
+                       "price" : 17.01
+                     },
+                     "baremetal_0" : {
+                       "price" : 0.01
+                     },
+                     "baremetal_s" : {
+                       "price" : 15.01
+                     },
+                     "c2.medium.x86" : {
+                       "price" : 0.2
+                     },
+                     "baremetal_1" : {
+                       "price" : 0.08
+                     },
+                     "baremetal_2a" : {
+                       "price" : 5.01
+                     }
+                   },
+                   "ewr1" : {
+                     "m2.xlarge.x86" : {
+                       "price" : 0.45
+                     },
+                     "baremetal_3" : {
+                       "price" : 0.35
+                     },
+                     "baremetal_2a2" : {
+                       "price" : 5.01
+                     },
+                     "baremetal_2" : {
+                       "price" : 0.34
+                     },
+                     "baremetal_0" : {
+                       "price" : 0.07
+                     },
+                     "baremetal_s" : {
+                       "price" : 15.01
+                     },
+                     "c2.medium.x86" : {
+                       "price" : 0.2
+                     },
+                     "baremetal_1" : {
+                       "price" : 0.08
+                     },
+                     "baremetal_2a" : {
+                       "price" : 5.01
+                     }
+                   },
+                   "fra1" : {
+                     "baremetal_1e" : {
+                       "price" : 4.01
+                     }
+                   },
+                   "syd1" : {
+                     "baremetal_1e" : {
+                       "price" : 0.08
+                     }
+                   },
+                   "sjc1" : {
+                     "m2.xlarge.x86" : {
+                       "price" : 0.4
+                     },
+                     "baremetal_3" : {
+                       "price" : 0.35
+                     },
+                     "baremetal_2a2" : {
+                       "price" : 5.01
+                     },
+                     "baremetal_2" : {
+                       "price" : 0.34
+                     },
+                     "baremetal_0" : {
+                       "price" : 0.05
+                     },
+                     "c2.medium.x86" : {
+                       "price" : 0.29
+                     },
+                     "baremetal_1" : {
+                       "price" : 0.08
+                     },
+                     "baremetal_2a" : {
+                       "price" : 5.01
+                     }
+                   },
+                   "sea1" : {
+                     "baremetal_1e" : {
+                       "price" : 0.08
+                     }
+                   },
+                   "lax1" : {
+                     "baremetal_1e" : {
+                       "price" : 0.08
+                     }
+                   },
+                   "sin1" : {
+                     "baremetal_1e" : {
+                       "price" : 0.08
+                     }
+                   },
+                   "iad1" : {
+                     "baremetal_1e" : {
+                       "price" : 0.08
+                     }
+                   }
+                 }
+               }
+               EOJ
+
+    ddt %( :$token , :$plan , :$site , :$cache );
+    my $cache-info = pn-fetch-cache($token) ;
+    # $cache-info<facilities> is an array that had to be flattened for
+    # the 'for' command to work (due to 1 element rule??)
+    # Instead we map a pair constructor on to the array which creates a list
+    # list of pairs which, when assigned to a hash, does the right thing
+    my %names = $cache-info<facilities>.map: { .<code> => .<name> }
+ #    for $cache-info<facilities>.flat -> $fac {
+ #        %names{ $fac<code> } = $fac<name>
+ #    }
+
+    # my $packet-net := pn-query(:method<get>, :endpoint<market/spot/prices>, :$token, :perl6);
+    my $packet-net := %smp ;
+    
+    my %printed ;
+    for $packet-net<spot_market_prices>.kv -> $site_code, $plans {
+        with $site { next unless $site_code eq one(.flat) }
+        for $plans.kv -> $machine, $info {
+            with $plan { next unless $machine eq one(.flat) }
+            say "$site_code: %names{ $site_code }" unless %printed{ $site_code }++ ;
+            say "  $machine:  \$" ~ $info<price>
+        }
+    }
+}
