@@ -1,6 +1,6 @@
-use v6.c;
-use Test;
-
+use v6.c ;
+use Test ;
+use lib 'lib' ;
 plan 1;
 
-use-ok("Slang::AltTernary");
+use-ok("Cloud::PacNet");
