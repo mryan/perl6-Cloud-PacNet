@@ -15,7 +15,7 @@ sub pn-query( Str :$method where any(@REST-methods),
                   :$token,
                 # :%headers,
                 # :%form,
-             Bool :$perl6 = False) is export {
+             Bool :$perl6 = False) is export(:functional) {
 
     my $json-data ;
     if $Local-Testing {
@@ -45,7 +45,7 @@ sub pn-query( Str :$method where any(@REST-methods),
 
 my constant $MAX_AGE = 24 * 3600;  # 1 day
 
-sub pn-fetch-cache($token, :$ConfigFile = DefaultConfigFile) is export {
+sub pn-fetch-cache($token, :$ConfigFile = DefaultConfigFile) is export(:functional) {
     die "Cannot read config file $ConfigFile" unless $ConfigFile.IO ~~ :r ;
     my $then = DateTime.new: jconf $ConfigFile.IO, 'cache-timestamp' ;
     if now - $then.Instant > $MAX_AGE {

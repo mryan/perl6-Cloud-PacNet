@@ -1,7 +1,7 @@
 use v6.c ;
 use Test ;
 use lib 'lib' ;
-use Cloud::PacNet ;
+use Cloud::PacNet :functional ;
 
 my $token = 'secret-bizzo' ;
 ::Cloud::PacNet::<$Local-Testing> = True ;
