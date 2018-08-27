@@ -6,6 +6,7 @@ use Data::Dump::Tree ;
 
 our $Local-Testing = False;
 constant DefaultConfigFile = %*ENV<HOME> ~ '/.cloud-pacnet.json' ;
+constant TestDataDir = 't/data/' ;
 constant URL = 'https://api.packet.net/' ;
 my @REST-methods = <get post put delete> ;
 
@@ -18,9 +19,12 @@ sub pn-query( Str :$method where any(@REST-methods),
 
     my $json-data ;
     if $Local-Testing {
-        # Fetch from testing-cache-config file
-        say "Local testing set - using fake query responses" ;
-        $json-data = '{ "hello": "world" }' ;
+        my $data-filename = join '+' , $method , $endpoint , $token ;
+        $json-data = $data-filename eq 'get+no-cache+TOKEN' ??
+            '{ "hard": "coded" }' 
+        !!    
+            # Fetch from testing-cache-config file
+            slurp TestDataDir ~ $data-filename ~ '.json' ;
     }
     else {   
         # Real thing

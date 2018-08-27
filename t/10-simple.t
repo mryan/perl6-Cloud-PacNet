@@ -3,8 +3,12 @@ use Test;
 use Cloud::PacNet;
 ::Cloud::PacNet::<$Local-Testing> = True ;
 
-plan 1;
-my $first_query = pn-query(:method<get>, :endpoint<user>, :token<secret-bizzo>);
-is($first_query, '{ "hello": "world" }' );
+plan 3;
 
-# my $second_query = pn_query(:method<get>, :endpoint<user>, :token<secret-bizzo>, :perl6);
+my $first_query = pn-query(:method<get>, :endpoint<no-cache>, :token<TOKEN>);
+is($first_query, '{ "hard": "coded" }', "Simplest, hard-coded query" );
+
+my $token = 'secret-bizzo' ;
+my $second_query = pn-query(:method<get>, :endpoint<second>, :$token, :perl6);
+isa-ok($second_query, Hash, "Second query returned a hash");
+is($second_query<result>, "OK2", "Second query had the right content");
