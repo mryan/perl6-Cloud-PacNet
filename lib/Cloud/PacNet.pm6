@@ -1,4 +1,4 @@
-unit module PacNet::RAPI ;
+unit module Cloud::PacNet ;
 use WWW ;
 use JSON::Fast  ;
 use Config::JSON '';
