@@ -1,6 +1,6 @@
 #!/usr/bin/env perl6
-use lib '.' ;
-use PacNet::RAPI ;
+use lib '../lib' ;
+use Clout::PacNet ;
 
 sub MAIN( :$token = %*ENV<PN_TOKEN>,
           :$plan, = <baremetal_1>, 

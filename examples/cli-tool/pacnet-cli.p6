@@ -1,6 +1,6 @@
 #!/usr/bin/env perl6
 use lib '../../lib' ;
-use PacNet::RAPI ;
+use Cloud::PacNet ;
 use JSON::Pretty ;
 use Config::JSON '' ;
 use Data::Dump::Tree ;
