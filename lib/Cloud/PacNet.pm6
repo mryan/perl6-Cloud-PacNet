@@ -23,7 +23,7 @@ sub pn-query( Str :$method where any(@REST-methods),
         $json-data = $data-filename eq 'get+no-cache+TOKEN' ??
             '{ "hard": "coded" }' 
         !!    
-            # Fetch from testing-cache-config file
+            # Fetch from files in test data dir
             slurp TestDataDir ~ $data-filename ~ '.json' ;
     }
     else {   
