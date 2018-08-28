@@ -17,10 +17,10 @@ my $user-details = $connection.GET-user ;  # returns a hash
 my $user-details = $connection.get-user ;
 
 my @orgs-list := $connection.GET-organizations ;    # returns an array
-my @orgs-list := $connection.get-orgs ;
+my @orgs-list := $connection.get-orgs ;             # Display only - This version only works with default org
 
 my @projects-list := $connection.GET-projects ; # array of projects this users is member of
-my @projects-list := $connection.get-projects ; # array of projects this users is member of
+my @projects-list := $connection.get-projects ; 
 
 $connection.set-current-project($ID) ;    # Different concept to that of packet's "default project"
                                           # This is an attribute on the object only.

@@ -8,11 +8,7 @@ Verify connection by doing "get user"
         + default-org-name
         + default-project-id (maybe empty)
         + current-project-id 
-        + @projects (each an object which has)
-            + id
-            + name
-        + @devices (each an object which has)
-            + id
+        + current-device-id 
 
 The default organization comes with /user.  If don't have a default project,
 then we can get /projects using the org-id
@@ -55,3 +51,34 @@ Rules for translation of packet API documentation to method calls on object
         Cannonical: $con.projects(id).POST-devices
         Alternate:  $con.project(id).create-device
 
+List of the API calls implemented and their alternates
+    Simple retrieval of information (all must have no params passed)
+    .GET-user                       .get-user
+    .GET-organizations              .get-orgs
+    .GET-projects                   .get-projects                   Array of all projects user is a memmber of
+    .GET-facilities                 .get-facilities
+    .GET-plans                      .get-plans
+    .GET-market-spot-prices         .get-spot-prices
+
+    Organization    (only the "default organization" as defined by packet.net at this time)
+    .organizations(id).GET-projects .org(id).get-projects           Array of project information
+    .organizations(id).POST-projects .org(id).create-project        Create a project for org
+
+    Projects (all id parameters are optional - defaults to .current-project
+    .projects(id).GET-events        .project(id).get-events         Array of project events
+    .projects(id).GET-devices       .project(id).get-devices        Array of all devices of a project
+    .projects(id).POST-devices      .project(id).create-device      Create a device and return details
+    .POST-projects                  .create-project                 Create a new project for default org
+    .GET-projects(id)               .get-project(id)                Retrieve info on a particular project
+    .PUT-projects(id)               .update-project(id)             Update project details
+    .DELETE-projects(id)            .delete-project(id)             Delete a project
+    
+    devices (all id parameters are optional - defaults to .current-device
+    .devices(id).GET-events         .device(id).get-events          Array of device events
+    .GET-projects(id)               .get-project(id)                Retrieve info on a particular project
+
+    .POST-devices                   .create-device                  Create a new device for default org
+    .GET-devices(id)                .get-device(id)                 Retrieve info on a particular device
+    .PUT-devices(id)                .update-device(id)              Update device details
+    .DELETE-devices(id)             .delete-device(id)              Delete a device
+    
