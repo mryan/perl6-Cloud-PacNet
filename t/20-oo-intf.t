@@ -4,18 +4,18 @@ use lib 'lib' ;
 use Cloud::PacNet ;
 
 # my $API-token = 'secret-bizzo' ;
-my $API-token = %ENV<PN_TOKEN> // die "No Token";
+my $API-token = %*ENV<PN_TOKEN> // die "No Token";
 
 plan 2;
 
-my $connection = Cloud::Pacnet.new(:$API-token, :!verify);  # token compolsory
+my $connection = Cloud::PacNet::API.new(:$API-token, :!verify);  # token compolsory
 
 $connection.verify-auth ;               # calls /user, /projects, ( or use 'include' for projects) 
                                         # defines default-project
 
 my $user-details := $connection.GET-user ;  # returns a hash
-isa-ok  $user-details            , Hash         , "user-details is a Hash" ;
-is $id  $user-details<full_name> ,'Martin Ryan' , "full_name is correct";
+isa-ok $user-details            ,  Hash         , "user-details is a Hash" ;
+is     $user-details<full_name> , 'Martin Ryan' , "full_name is correct";
 
 # my $user-details = $connection.get-user ;
 # 

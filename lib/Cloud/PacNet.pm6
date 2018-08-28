@@ -2,6 +2,7 @@ unit module Cloud::PacNet ;
 use WWW ;
 use JSON::Fast  ;
 use Config::JSON '';
+use HTTP::UserAgent ;
 use Data::Dump::Tree ;
 
 our $Local-Testing = False;
@@ -10,7 +11,7 @@ constant TestDataDir = 't/data/' ;
 constant URL = 'https://api.packet.net/' ;
 my @REST-methods = <get post put delete> ;
 
-class ::Cloud::PacNet is export {
+class API is export {
     has $.API-token is required ;          # Compolsory
     has $.HUA-Class = HTTP::UserAgent ;    # For testing
     has $.current-project is rw ;          # Expects a UUID
@@ -29,19 +30,21 @@ class ::Cloud::PacNet is export {
 
     submethod TWEAK {
         $ua = $!HUA-Class.new ;
-        $!verify-connection if $!verify ;
+        self.verify-auth if $!verify ;
     }
 
     method verify-auth {
-        if $ua.get(URL ~ 'user' , |%!minimum-headers).is-success {
-            my %user-data := from-json( $ua.decoded-content ) ;
-            ( $!user-id , $!user-full-name ) = %user-data<id full_name> ;
-            $!default-org-id     = %user-data<default_organization_id> ;
-            $!default-project-id = %user-data<default_project_id> ;
-            $!verified-auth = True ;
-        }
-        else {
-            fail err-message($ua)
+        with $ua.get: URL ~ 'user' , |%!minimum-headers {
+            if .is-success {
+                my %user-data := from-json( .decoded-content ) ;
+                ( $!user-id , $!user-full-name ) = %user-data<id full_name> ;
+                $!default-org-id     = %user-data<default_organization_id> ;
+                $!default-project-id = %user-data<default_project_id> ;
+                $!verified-auth = True ;
+            }
+            else {
+                fail err-message($_)
+            }
         }
     }
 
@@ -54,7 +57,7 @@ class ::Cloud::PacNet is export {
                 fail "Error {.code}: {.status-line}"
         }
     }
-    method get-user { callsame GET-user }
+    method get-user { .GET-user }
 
     sub err-message($_) { "Error {.code}: {.status-line}" }
 }
