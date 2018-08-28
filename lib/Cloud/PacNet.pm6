@@ -10,6 +10,55 @@ constant TestDataDir = 't/data/' ;
 constant URL = 'https://api.packet.net/' ;
 my @REST-methods = <get post put delete> ;
 
+class ::Cloud::PacNet is export {
+    has $.API-token is required ;          # Compolsory
+    has $.HUA-Class = HTTP::UserAgent ;    # For testing
+    has $.current-project is rw ;          # Expects a UUID
+    has $.current-device  is rw ;          # Expects a UUID
+    has Bool $.verify = True ;             # Verify token at object creation time?
+
+    has $!ua = $!HUA-Class.new ;
+    has $!user-id ;
+    has $!user-full-name ; 
+    has $!verified-auth = False ;
+    has $!default-org-id ;
+    has $!default-project-id ;
+    has %!minimum-headers = %(  :X-Auth-Token($!API-token) ,
+                                :Accept<application/json>) ;
+    my $ua ;
+
+    submethod TWEAK {
+        $ua = $!HUA-Class.new ;
+        $!verify-connection if $!verify ;
+    }
+
+    method verify-auth {
+        if $ua.get(URL ~ 'user' , |%!minimum-headers).is-success {
+            my %user-data := from-json( $ua.decoded-content ) ;
+            ( $!user-id , $!user-full-name ) = %user-data<id full_name> ;
+            $!default-org-id     = %user-data<default_organization_id> ;
+            $!default-project-id = %user-data<default_project_id> ;
+            $!verified-auth = True ;
+        }
+        else {
+            fail err-message($ua)
+        }
+    }
+
+    method GET-user {
+        self.verify-auth unless $!verified-auth ;
+        with $ua.get: URL ~ 'user' , |%!minimum-headers {
+            .is-success ??
+                return from-json( .decoded-content ) 
+            !!    
+                fail "Error {.code}: {.status-line}"
+        }
+    }
+    method get-user { callsame GET-user }
+
+    sub err-message($_) { "Error {.code}: {.status-line}" }
+}
+
 sub pn-query( Str :$method where any(@REST-methods),
                   :$endpoint, 
                   :$token,
