@@ -14,6 +14,7 @@ my @REST-methods = <get post put delete> ;
 class API is export {
     has $.API-token is required ;          # Compolsory
     has $.HUA-Class = HTTP::UserAgent ;    # For testing
+    has $.current-org is rw ;              # Expects a UUID
     has $.current-project is rw ;          # Expects a UUID
     has $.current-device  is rw ;          # Expects a UUID
     has Bool $.verify = True ;             # Verify token at object creation time?
@@ -38,8 +39,8 @@ class API is export {
             if .is-success {
                 my %user-data := from-json( .decoded-content ) ;
                 ( $!user-id , $!user-full-name ) = %user-data<id full_name> ;
-                $!default-org-id     = %user-data<default_organization_id> ;
-                $!default-project-id = %user-data<default_project_id> ;
+                $!current-org = $!default-org-id  = %user-data<default_organization_id> ;
+                $!current-project = $!default-project-id = %user-data<default_project_id> ;
                 $!verified-auth = True ;
             }
             else {

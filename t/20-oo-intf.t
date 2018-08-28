@@ -6,13 +6,17 @@ use Cloud::PacNet ;
 # my $API-token = 'secret-bizzo' ;
 my $API-token = %*ENV<PN_TOKEN> // die "No Token";
 
-plan 2;
+plan 4;
 
 my $connection = Cloud::PacNet::API.new(:$API-token, :!verify);  # token compolsory
 
 $connection.verify-auth ;               # calls /user, /projects, ( or use 'include' for projects) 
                                         # defines default-project
-say $connection ;
+# verify-auth should result in a populated current-org
+like  $connection.current-org , / ^^  <[ a..z 0..9 - ]>+  $$ /,  "Got an org id" ;
+
+# gist starts with "User Name";
+like  $connection.gist , / ^^  'User Name:  Martin Ryan' /,  "Gist looks ok" ;
 
 my $user-details := $connection.GET-user ;  # returns a hash
 isa-ok $user-details            ,  Hash         , "user-details is a Hash" ;
