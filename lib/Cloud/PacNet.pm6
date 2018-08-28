@@ -48,6 +48,15 @@ class API is export {
         }
     }
 
+    method gist {
+        qq:to/END_HERE/ ;
+        User Name:  $!user-full-name
+        User ID:    $!user-id
+        Org ID:     $!default-org-id
+        Project ID: { $!default-project-id // "[Not Specified]" }
+        END_HERE
+    }
+
     method GET-user {
         self.verify-auth unless $!verified-auth ;
         with $ua.get: URL ~ 'user' , |%!minimum-headers {

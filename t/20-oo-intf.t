@@ -12,6 +12,7 @@ my $connection = Cloud::PacNet::API.new(:$API-token, :!verify);  # token compols
 
 $connection.verify-auth ;               # calls /user, /projects, ( or use 'include' for projects) 
                                         # defines default-project
+say $connection ;
 
 my $user-details := $connection.GET-user ;  # returns a hash
 isa-ok $user-details            ,  Hash         , "user-details is a Hash" ;
