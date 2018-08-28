@@ -1,0 +1,57 @@
+Verify connection by doing "get user"
+    - store user.id, user.full-name, user.default-org-id, user.derfault-project-id
+    - don't store these details - you get them as a product of connection verification anyway
+    - Connection object has
+        + user-id
+        + user-full-name
+        + default-org-id
+        + default-org-name
+        + default-project-id (maybe empty)
+        + current-project-id 
+        + @projects (each an object which has)
+            + id
+            + name
+        + @devices (each an object which has)
+            + id
+
+The default organization comes with /user.  If don't have a default project,
+then we can get /projects using the org-id
+
+Rules for translation of packet API documentation to method calls on object
+    - Where there is one component for the endpoint
+        => Call on the connection object directly
+
+        Packet API:  GET /user
+        Cannonical: $con.GET-user
+        Alternate:  $con.get-user
+        Packet API: 
+        Cannonical: 
+        Alternate: 
+
+    - Where there is two components for the endpoint and the second
+      component is a field/ID;
+        => Use the ID as a positional parameter
+        => If the first component is a plural, the friendlier alternative uses the singular
+
+        Packet API: GET /devices/{id}    - retrieve a device
+        Cannonical: $con.GET-devices(id)
+        Alternate:  $con.get-device(id)
+
+        Packet API: PUT /devices/{id}   - update a device
+        Cannonical: $con.PUT-devices(id)
+        Alternate:  $con.update-device(id)
+
+    - Where there are three components for the endpoint and the second
+      component is a field/ID;
+        => Use the first component as the method call on the connection object
+        => Use the ID as a positional parameter to that method call
+        => If the first component is a plural, the friendlier alternative uses the singular
+
+        Packet API: GET /projects/{id}/devices    - retrieve all devices of a project
+        Cannonical: $con.projects(id).GET-devices
+        Alternate:  $con.project(id).get-devices
+
+        Packet API: POST /projects/{id}/devices   - create a device
+        Cannonical: $con.projects(id).POST-devices
+        Alternate:  $con.project(id).create-device
+
