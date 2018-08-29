@@ -27,15 +27,12 @@ class API is export {
     has $!default-project-id ;
     has %!minimum-headers = %(  :X-Auth-Token($!API-token) ,
                                 :Accept<application/json>) ;
-    my $ua ;
-
     submethod TWEAK {
-        $ua = $!HUA-Class.new ;
         self.verify-auth if $!verify ;
     }
 
     method verify-auth {
-        with $ua.get: URL ~ 'user' , |%!minimum-headers {
+        with $!ua.get: URL ~ 'user' , |%!minimum-headers {
             if .is-success {
                 my %user-data := from-json( .decoded-content ) ;
                 ( $!user-id , $!user-full-name ) = %user-data<id full_name> ;
@@ -60,7 +57,7 @@ class API is export {
 
     method GET-user {
         self.verify-auth unless $!verified-auth ;
-        with $ua.get: URL ~ 'user' , |%!minimum-headers {
+        with $!ua.get: URL ~ 'user' , |%!minimum-headers {
             .is-success ??
                 return from-json( .decoded-content ) 
             !!    
