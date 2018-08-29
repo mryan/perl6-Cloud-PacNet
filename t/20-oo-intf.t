@@ -1,14 +1,17 @@
 use v6.c ;
 use Test ;
 use lib 'lib' ;
+use lib 't/lib' ;
+use Fake::HTTPua ;
 use Cloud::PacNet ;
 
-# my $API-token = 'secret-bizzo' ;
-my $API-token = %*ENV<PN_TOKEN> // die "No Token";
+my $API-token = 'secret-bizzo' ;
+# my $API-token = %*ENV<PN_TOKEN> // die "No Token";
+my $HUA-Class = Fake::HTTPua ;
 
 plan 4;
 
-my $connection = Cloud::PacNet::API.new(:$API-token, :!verify);  # token compolsory
+my $connection = Cloud::PacNet::API.new(:$API-token, :$HUA-Class, :!verify);  # token compolsory
 
 $connection.verify-auth ;               # calls /user, /projects, ( or use 'include' for projects) 
                                         # defines default-project
@@ -16,11 +19,11 @@ $connection.verify-auth ;               # calls /user, /projects, ( or use 'incl
 like  $connection.current-org , / ^^  <[ a..z 0..9 - ]>+  $$ /,  "Got an org id" ;
 
 # gist starts with "User Name";
-like  $connection.gist , / ^^  'User Name:  Martin Ryan' /,  "Gist looks ok" ;
+like  $connection.gist , / ^^  'User Name:  Jack Benson' /,  "Gist looks ok" ;
 
 my $user-details := $connection.GET-user ;  # returns a hash
 isa-ok $user-details            ,  Hash         , "user-details is a Hash" ;
-is     $user-details<full_name> , 'Martin Ryan' , "full_name is correct";
+is     $user-details<full_name> , 'Jack Benson' , "full_name is correct";
 
 # my $user-details = $connection.get-user ;
 # 
