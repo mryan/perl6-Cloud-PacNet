@@ -1,4 +1,4 @@
-*/.precomp
+*.precomp
 *~
 *.swp
 out.dat
