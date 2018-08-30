@@ -60,13 +60,13 @@ class API is export {
     method GET-organizations  {  self!GET-something('organizations')                }
     method get-orgs           {  self!GET-something('organizations')<organizations> }
     method GET-projects       {  self!GET-something('projects')                     }
-    method get-projects       {  self!GET-something('projects')                     }
+    method get-projects       {  self!GET-something('projects')<projects>           }
     method GET-facilities     {  self!GET-something('facilities')                   }
     method get-facilities     {  self!GET-something('facilities')<facilities>       }
-    method GET-plans          {  self!GET-something('plans')         }
-    method get-plans          {  self!GET-something('plans')         }
-    method GET-market-spot-prices {  self!GET-something('market-spot-prices') }
-    method get-spot-prices    {  self!GET-something('market-spot-prices') }
+    method GET-plans          {  self!GET-something('plans')                        }
+    method get-plans          {  self!GET-something('plans')<plans>                 }
+    method GET-market-spot-prices {  self!GET-something('market/spot/prices')       }
+    method get-spot-prices    {  self!GET-something('market/spot/prices')<spot_market_prices> }
 
     method !GET-something($endpoint) {
         self.verify-auth unless $!verified-auth ;

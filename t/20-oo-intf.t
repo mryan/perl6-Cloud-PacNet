@@ -5,7 +5,7 @@ use lib 't/lib' ;
 use Fake::HTTPua ;
 use Cloud::PacNet ;
 
-plan 4 ;
+plan 7 ;
 my $API-token = 'secret-bizzo' ;
 my $HUA-Class = Fake::HTTPua ;
 
@@ -79,4 +79,61 @@ subtest 'organizations' => {
     is    +$orgs                   ,   1                 , 'orgs has 1 elem';
     isa-ok $orgs[0]                ,  Hash               , 'orgs[0] is a Hash';
     is     $orgs[0]<name>          ,  "John’s Projects"  , 'orgs[0]<name> is correct';
+}
+
+subtest 'projects' => {
+    plan 11 ;
+
+    my $projects := $cpn.GET-projects ;
+    isa-ok $projects                   ,  Hash             , 'projectss returns a Hash' ;
+    isa-ok $projects<projects>         ,  Array            , 'projects<projects> is an Array';
+    is    +$projects<projects>         ,   1               , 'projects<projects> has 1 elem';
+    isa-ok $projects<projects>[0]      ,  Hash             , 'projects<projects>[0] is a Hash';
+    is     $projects<projects>[0]<name> ,  "VIRL Kickoff"  , 'projects<projects>[0]<name> is correct';
+    isa-ok $projects<meta>             ,  Hash             , 'projects<meta> is a Hash';
+    isa-ok $projects<meta><total>      ,   1               , 'projects<meta><total> is correct';
+
+    $projects := $cpn.get-projects ;
+    isa-ok $projects                   ,  Array            , 'projects is an Array' ;
+    is    +$projects                   ,   1               , 'projects has 1 elem';
+    isa-ok $projects[0]                ,  Hash             , 'projects[0] is a Hash';
+    is     $projects[0]<name>          ,  "VIRL Kickoff"   , 'projects[0]<name> is correct';
+}
+
+subtest 'plans' => {
+    plan 11 ;
+
+    my $plans := $cpn.GET-plans ;
+    isa-ok $plans                      ,  Hash           , 'plans returns a Hash' ;
+    isa-ok $plans<plans>               ,  Array          , 'plans<plans> is an Array ' ;
+    is    +$plans<plans>               ,  11             , 'plans<plans> has 11 elems';
+    isa-ok $plans<plans>[1]            ,  Hash           , 'plans<plans>[1] is a Hash';
+    is     $plans<plans>[1]<name>      , 'm2.xlarge.x86' , 'plans<plans>[1]<name> is correct';
+    is     $plans<plans>[1]<specs><nics>[0]<type> , '10Gbps' , 'plans<plans>[1]<specs><nics>[0]<type> is correct';
+
+    $plans := $cpn.get-plans ;
+    isa-ok $plans                    ,  Array          , 'plans is an Array' ;
+    is    +$plans                    ,  11             , 'plans has 11 elems';
+    isa-ok $plans[10]                ,  Hash           , 'plans[10] is a Hash';
+    is     $plans[10]<name>          , 'x1.small.x86'  , 'plans[10]<name> is correct';
+    is     $plans[10]<specs><nics>[0]<type> , '10Gbps' , 'plans[10]<specs><nics>[0]<type> is correct';
+}
+
+subtest 'msp' => {
+    plan 11 ;
+
+    my $msp := $cpn.GET-market-spot-prices ;
+    isa-ok $msp                              ,  Hash  , 'msp returns a Hash' ;
+    isa-ok $msp<spot_market_prices>          ,  Hash  , 'msp<spot_market_prices> is an Hash ' ;
+    is    +$msp<spot_market_prices>.keys     ,  14    , 'msp<spot_market_prices>.keys has 14 elems';
+    isa-ok $msp<spot_market_prices><sjc1>    ,  Hash  , 'msp<spot_market_prices><sjc1> is a Hash';
+    isa-ok $msp<spot_market_prices><sjc1><baremetal_1> , Hash , 'msp<spot_market_prices><sjc1><baremetal_1> is a Hash';
+    is     $msp<spot_market_prices><sjc1><baremetal_1><price> , 4.01  , 'msp<spot_market_prices><sjc1><baremetal_1><price> is correct';
+
+    my $spot-prices := $cpn.get-spot-prices ;
+    isa-ok $spot-prices                             , Hash  , 'spot-prices returns a Hash' ;
+    is    +$spot-prices.keys                        , 14    , 'spot-prices.keys has 14 elems';
+    isa-ok $spot-prices<ams1>                       , Hash  , 'spot-prices<ams1> is a Hash';
+    isa-ok $spot-prices<ams1><baremetal_2a2>        , Hash  , 'spot-prices<ams1><baremetal_2a2> is a Hash';
+    is     $spot-prices<ams1><baremetal_2a2><price> , 5.01  , 'spot-prices<ams1><baremetal_2a2><price> is correct';
 }
