@@ -66,7 +66,7 @@ class API is export {
     method GET-plans          {  self!GET-something('plans')         }
     method get-plans          {  self!GET-something('plans')         }
     method GET-market-spot-prices {  self!GET-something('market-spot-prices') }
-    method get-spot-prices {  self!GET-something('market-spot-prices') }
+    method get-spot-prices    {  self!GET-something('market-spot-prices') }
 
     method !GET-something($endpoint) {
         self.verify-auth unless $!verified-auth ;
