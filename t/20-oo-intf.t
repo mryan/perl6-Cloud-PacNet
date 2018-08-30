@@ -5,66 +5,78 @@ use lib 't/lib' ;
 use Fake::HTTPua ;
 use Cloud::PacNet ;
 
+plan 4 ;
 my $API-token = 'secret-bizzo' ;
-# my $API-token = %*ENV<PN_TOKEN> // die "No Token";
 my $HUA-Class = Fake::HTTPua ;
 
-plan 4;
+my token lcxdigit {  <[0..9a..f]> }  # Lowercase hex digit
+my token uuid     {
+                    <lcxdigit> ** 8 '-'
+                    [ <lcxdigit> ** 4 '-' ] ** 3
+                    <lcxdigit> ** 12
+                  }
 
-my $connection = Cloud::PacNet::API.new(:$API-token, :$HUA-Class, :!verify);  # token compolsory
+my $cpn = Cloud::PacNet::API.new(:$API-token, :$HUA-Class, :!verify);  # token compolsory
 
-$connection.verify-auth ;               # calls /user, /projects, ( or use 'include' for projects) 
-                                        # defines default-project
-# verify-auth should result in a populated current-org
-like  $connection.current-org , / ^^  <[ a..z 0..9 - ]>+  $$ /,  "Got an org id" ;
+subtest 'Initial connection' => {
+    plan 2;
 
-# gist starts with "User Name";
-like  $connection.gist , / ^^  'User Name:  Jack Benson' /,  "Gist looks ok" ;
+    # verify-auth should result in a populated current-org
+    $cpn.verify-auth ;
+    like  $cpn.current-org , /^^ <uuid> $$/,  "Got an org id" ;
+    
+    # gist starts with "User Name";
+    like  $cpn.gist , /^^  'User Name:  John Doe' /,  "Gist looks ok" ;
+}
 
-my $user-details := $connection.GET-user ;  # returns a hash
-isa-ok $user-details            ,  Hash         , "user-details is a Hash" ;
-is     $user-details<full_name> , 'Jack Benson' , "full_name is correct";
+subtest 'user' => {
+    plan 6 ;
 
-# my $user-details = $connection.get-user ;
-# 
-# my @orgs-list := $connection.GET-organizations ;    # returns an array
-# my @orgs-list := $connection.get-orgs ;             # Display only - This version only works with default org
-# 
-# my @projects-list := $connection.GET-projects ; # array of projects this users is member of
-# my @projects-list := $connection.get-projects ; 
-# 
-# $connection.set-current-project($ID) ;    # Different concept to that of packet's "default project"
-#                                           # This is an attribute on the object only.
-#                                           # Only relevant when creating devices, not when getting them
-# 
-# my @devices := $connection.get-devices ;  # Works by using GET /projects - ok to not have a
-#                                           # set project defined
-# my $spot-market-info := $connection.get-market-spot-prices
-# 
-# my $first_query = pn-query(:method<get>, :endpoint<no-cache>, :token<TOKEN>);
-# is($first_query, '{ "hard": "coded" }', "Local testing scafold using hard-coded result" );
-# 
-# subtest 'Simple get query' => {
-#     plan 2 ;
-#     my $second_query = pn-query(:method<get>, :endpoint<second>, :$token, :perl6);
-#     isa-ok $second_query         , Hash  , "Second query returned a hash" ;
-#     is     $second_query<result> , "OK2" , "Second query had the right content" ;
-# }
-# 
-# subtest 'Emulated get /plans' => {
-#     plan 8 ;
-#     my $third_query = pn-query(:method<get>, :endpoint<plans>, :$token, :perl6);
-#     isa-ok  $third_query , Hash , "Third query returned a hash" ;
-#     my $plans := $third_query<plans> ;
-#     isa-ok  $plans , Array , "Third query plans is an Array" ;
-#     my $plan := $plans[2] ;
-#     isa-ok  $plan , Hash , "Third query, third plan is a Hash" ;
-#     my $id := $plan<id> ;
-#     isa-ok  $id , Str , "Third query, third plan id is a Str" ;
-#     is $id , '87728148-3155-4992-a730-8d1e6aca8a32' , "Third query, third plan id is correct";
-#     my $pricing := $plan<pricing> ;
-#     isa-ok  $pricing , Hash , "Third query, third plan pricing is a Hash" ;
-#     my $hourly := $pricing<hour> ;
-#     isa-ok  $hourly , Rat , "Third query, third plan hourly pricing is a Num" ;
-#     is $hourly , 0.000104 , "Third query, third plan hourly price is correct" ;
-# }
+    my $user-details := $cpn.GET-user ;
+    isa-ok $user-details            ,  Hash             , 'user-details is a Hash' ;
+    is     $user-details<full_name> , 'John Doe'        , 'full_name is correct';
+    is     $user-details<email>     , 'Bogus@gmail.com' , 'email is correct';
+
+    $user-details := $cpn.get-user ;
+    isa-ok $user-details            ,  Hash             , 'user-details is a Hash' ;
+    is     $user-details<full_name> , 'John Doe'        , 'full_name is correct';
+    is     $user-details<email>     , 'Bogus@gmail.com' , 'email is correct';
+}
+
+subtest 'facilities' => {
+    plan 11 ;
+
+    my $facilities := $cpn.GET-facilities ;
+    isa-ok $facilities                      ,  Hash  , 'facilities returns a Hash' ;
+    isa-ok $facilities<facilities>          ,  Array , 'facilities<facilities> is an Array ' ;
+    is    +$facilities<facilities>          ,  15    , 'facilities<facilities> has 15 elems';
+    isa-ok $facilities<facilities>[2]       ,  Hash  , 'facilities<facilities>[2] is a Hash';
+    is     $facilities<facilities>[2]<code> , 'atl1' , 'facilities<facilities>[2]<code> is correct';
+    is     $facilities<facilities>[2]<features>[0]   , 'baremetal'  , 'facilities<facilities>[2]<features>[0] is correct';
+
+    $facilities := $cpn.get-facilities ;
+    isa-ok $facilities            ,  Array            , 'facilities is an Array' ;
+    is    +$facilities            ,  15               , 'facilities has 15 elems';
+    isa-ok $facilities[9]         ,  Hash             , 'facilities[9] is a Hash';
+    is     $facilities[9]<name>   , 'Sydney, Australia' , 'facilities[9]<name> is correct';
+    is     $facilities[9]<features>[1] , 'layer_2'    , 'facilities[9]<features>[1] is correct';
+}
+
+subtest 'organizations' => {
+    plan 11 ;
+
+    my $orgs := $cpn.GET-organizations ;
+    isa-ok $orgs                   ,  Hash             , 'organizationss returns a Hash' ;
+    isa-ok $orgs<organizations>    ,  Array            , 'orgs<organizations> is an Array';
+    is    +$orgs<organizations>    ,   1               , 'orgs<organizations> has 1 elem';
+    isa-ok $orgs<organizations>[0] ,  Hash             , 'orgs<organizations>[0] is a Hash';
+    is     $orgs<organizations>[0]<name> ,  "John’s Projects"  , 'orgs<organizations>[0]<name> is correct';
+    isa-ok $orgs<meta>             ,  Hash             , 'orgs<meta> is a Hash';
+    isa-ok $orgs<meta><total>      ,   1               , 'orgs<meta><total> is correct';
+
+    $orgs := $cpn.get-orgs ;
+    isa-ok $orgs                   ,  Array              , 'orgs is an Array' ;
+    is    +$orgs                   ,   1                 , 'orgs has 1 elem';
+    isa-ok $orgs[0]                ,  Hash               , 'orgs[0] is a Hash';
+    is     $orgs[0]<name>          ,  "John’s Projects"  , 'orgs[0]<name> is correct';
+}
