@@ -16,7 +16,7 @@ my token uuid     {
                     <lcxdigit> ** 12
                   }
 
-my $cpn = Cloud::PacNet::API.new(:$API-token, :$HUA-Class, :!verify);  # token compolsory
+my $cpn = Cloud::PacNet.new(:$API-token, :$HUA-Class, :!verify);  # token compolsory
 
 subtest 'Initial connection' => {
     plan 2;
