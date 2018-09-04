@@ -1,5 +1,5 @@
 unit class Fake::HTTPua:ver<0.0.1>;
-has $.decoded-content;
+has $.content;
 has $.status-line;
 has $.is-success;
 has $.code;
@@ -22,7 +22,7 @@ method !emulate($method, $uri, Bool :$bin, *%header)  {
     $!is-success = Nil ;   # the new undef
     my $filename = self!make-unique-name($method, $uri);
     try {
-        $!decoded-content = slurp $filename ;
+        $!content = slurp $filename ;
         CATCH { 
             default {
                 $!code = 'Fake::HTTPua' ;

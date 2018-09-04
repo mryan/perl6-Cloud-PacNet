@@ -31,7 +31,7 @@ submethod TWEAK {
 method verify-auth {
     with $!ua.get: URL ~ '/user' , |%!minimum-headers {
         if .is-success {
-            my %user-data := from-json( .decoded-content ) ;
+            my %user-data := from-json( .content ) ;
             ( $!user-id , $!user-full-name ) = %user-data<id full_name> ;
             $!current-org = $!default-org-id  = %user-data<default_organization_id> ;
             $!current-project = $!default-project-id = %user-data<default_project_id> ;
@@ -69,9 +69,9 @@ method !GET-something($endpoint) {
     self.verify-auth unless $!verified-auth ;
     with $!ua.get: URL.IO.add($endpoint) , |%!minimum-headers {
         .is-success ??
-            return from-json( .decoded-content ) 
+            return from-json( .content ) 
         !!    
-            fail "Error {.code} on GET: {.status-line}"
+            fail "Error while GETing: {.status-line}"
     }
 }
 
