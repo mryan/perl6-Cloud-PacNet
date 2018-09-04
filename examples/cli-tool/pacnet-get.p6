@@ -8,13 +8,14 @@ use Data::Dump::Tree ;
 constant ConfigFile = %*ENV<HOME> ~ '/.pacnet-rapi-cache.json' ;
 my %*SUB-MAIN-OPTS = :named-anywhere ;
 
-#| where method is get, post, put or delete
+#| Issue GET request
 multi sub MAIN( $endpoint, 
                 $token    = %*ENV<PN_TOKEN>, 
           Bool :$perl6, 
-          Bool :$raw      ) {
+          Bool :$raw, 
+               :$debug    ) {
 
-    my $raw_result = pn-get :$endpoint , :$token ;
+    my $raw_result = pn-get :$endpoint , :$token , :$debug;
     my $perl6_data = from-json $raw_result ;
 
     if $perl6 {
