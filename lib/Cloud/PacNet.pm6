@@ -5,7 +5,6 @@ use HTTP::UserAgent ;
 use Data::Dump::Tree ;
 
 constant DefaultConfigFile = %*ENV<HOME> ~ '/.cloud-pacnet.json' ;
-constant TestDataDir = 't/data/' ;
 constant URL = 'https://api.packet.net' ;
 my @REST-methods = <get post put delete> ;
 
@@ -44,12 +43,16 @@ method verify-auth {
 }
 
 method gist {
-    qq:to/END_HERE/ ;
-    User Name:  $!user-full-name
-    User ID:    $!user-id
-    Org ID:     $!default-org-id
-    Project ID: { $!default-project-id // "[Not Specified]" }
-    END_HERE
+    $!verified-auth ??
+        qq:to/END_HERE/
+        Verified instance of $?CLASS
+        User Name:  $!user-full-name
+        User ID:    $!user-id
+        Org ID:     $!default-org-id
+        Project ID: { $!default-project-id // "[Not Specified]" }
+        END_HERE
+    !!
+        "Unverified instance of $?CLASS"
 }
 
 method GET-user           {  self!GET-something('user')                         }
@@ -69,9 +72,61 @@ method !GET-something($endpoint) {
     self.verify-auth unless $!verified-auth ;
     with $!ua.get: URL.IO.add($endpoint) , |%!minimum-headers {
         .is-success ??
+            # A successful get is presumed to have content
             return from-json( .content ) 
         !!    
-            fail "Error while GETing: {.status-line}"
+            fail qq:to/END_HERE/
+            Error while GETing: {.status-line}
+            { .content if .has-content }
+            END_HERE
+    }
+}
+
+method PUT-projects($id, |c)        { self!PUT-something("/projects/$id", |c)  }
+
+method !PUT-something($endpoint, *%content) {
+    self.verify-auth unless $!verified-auth ;
+    
+    my %headers = %!minimum-headers ;
+    %headers<Content-Type> = 'application/json' ;
+    my $req = HTTP::Request.new: PUT => URL.IO.add($endpoint).Str, |%headers ;
+    $req.add-content: to-json( %content );
+    with HTTP::UserAgent.new(:debug).request: $req  {
+        .is-success ??
+            .has-content ??
+                # return from-json( .content ) 
+                return  .content  
+            !!
+                True
+        !!    
+            fail qq:to/END_HERE/
+            Error while PUTing: {.status-line}
+            { .content if .has-content }
+            END_HERE
+    }
+}
+
+method POST-projects(|c)        { self!POST-something("/projects", |c)  }
+
+method !POST-something($endpoint, *%content) {
+    self.verify-auth unless $!verified-auth ;
+    
+    my %headers = %!minimum-headers ;
+    %headers<Content-Type> = 'application/json' ;
+    my $req = HTTP::Request.new: POST => URL.IO.add($endpoint).Str, |%headers ;
+    $req.add-content: to-json( %content );
+    with HTTP::UserAgent.new(:debug).request: $req  {
+        .is-success ??
+            .has-content ??
+                # return from-json( .content ) 
+                return  .content  
+            !!
+                True
+        !!    
+            fail qq:to/END_HERE/
+            Error while POSTing: {.status-line}
+            { .content if .has-content }
+            END_HERE
     }
 }
 
