@@ -8,7 +8,7 @@ use Data::Dump::Tree ;
 our $Local-Testing = False;
 constant DefaultConfigFile = %*ENV<HOME> ~ '/.cloud-pacnet.json' ;
 constant TestDataDir = 't/data/' ;
-constant URL = 'https://api.packet.net/' ;
+constant URL = 'https://api.packet.net' ;
 my @REST-methods = <get post put delete> ;
 
 class API is export {
@@ -74,49 +74,42 @@ class API is export {
             .is-success ??
                 return from-json( .decoded-content ) 
             !!    
-                fail "Error {.code}: {.status-line}"
+                fail "Error {.code} on GET: {.status-line}"
         }
     }
 
     sub err-message($_) { "Error {.code}: {.status-line}" }
 }
 
-sub pn-query( Str :$method where any(@REST-methods),
-                  :$endpoint, 
-                  :$token,
-                # :%headers,
-                # :%form,
-             Bool :$perl6 = False) is export(:functional) {
 
-    my $json-data ;
-    if $Local-Testing {
-        my $data-filename = join '+' , $method , $endpoint , $token ;
-        $json-data = $data-filename eq 'get+no-cache+TOKEN' ??
-            '{ "hard": "coded" }' 
-        !!    
-            # Fetch from files in test data dir
-            slurp TestDataDir ~ $data-filename ~ '.json' ;
-    }
-    else {   
-        # Real thing
-        # module WWW exports subs whose names' match REST method names
-        $json-data = ::{ '&' ~ $method }.( URL ~ $endpoint , 
-                                      #  %(
-                                            :X-Auth-Token($token) ,
-                                            :Accept<application/json> ,
-                                      #     |%headers
-                                      #   )
-                                      #  |%form
-                                         );
+sub pn-get( :$endpoint, 
+            :$token,
+            :%headers is copy,
+             Bool :$perl6 = False) is export(:pn-get) {
+
+    %headers<User-Agent>   //=  'perl6-Cloud-PacNet' ;
+    %headers<Accept>       //=  'application/json' ;
+    %headers<X-Auth-Token> //=  $token // die "No token" ;
+    %headers<GET>            =  URL.IO.add($endpoint).Str ;
+
+    my $req = HTTP::Request.new:  |%headers ;
+    put $req.Str(:debug) ;
+
+    with HTTP::UserAgent.new.request: $req  {
+        .is-success ??
+            $perl6 ?? 
+                from-json .content
+                !!
+                .content
+        !!
+            fail "Error while GETing: {.status-line}"
     }
 
-    return $perl6 ?? from-json($json-data)
-                  !! $json-data 
 }
 
 my constant $MAX_AGE = 24 * 3600;  # 1 day
 
-sub pn-fetch-cache($token, :$ConfigFile = DefaultConfigFile) is export(:functional) {
+sub pn-fetch-cache($token, :$ConfigFile = DefaultConfigFile) is export(:pn-fetch-cache) {
     die "Cannot read config file $ConfigFile" unless $ConfigFile.IO ~~ :r ;
     my $then = DateTime.new: jconf $ConfigFile.IO, 'cache-timestamp' ;
     if now - $then.Instant > $MAX_AGE {
@@ -130,8 +123,8 @@ sub pn-fetch-cache($token, :$ConfigFile = DefaultConfigFile) is export(:function
 }
 
 sub update_cache($token, :$ConfigFile) {
-    my %cache := pn-query(:method<get>, :endpoint<facilities>, :$token, :perl6);
-    %cache<plans> := pn-query(:method<get>, :endpoint<plans>, :$token, :perl6)<plans> ;
+    my %cache := pn-get(:endpoint<facilities>, :$token, :perl6);
+    %cache<plans> := pn-get(:endpoint<plans>, :$token, :perl6)<plans> ;
     jconf-write $ConfigFile.IO, 'cache', %cache ;
     jconf-write $ConfigFile.IO, 'cache-timestamp', now ;
 }
