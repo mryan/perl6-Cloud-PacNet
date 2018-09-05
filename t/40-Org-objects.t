@@ -49,7 +49,7 @@ subtest 'orgs(id).get-projects' => {
     isa-ok $projects<meta><total>      ,   1               , 'projects<meta><total> is correct';
 
     my $first-time = $specific-org.WHICH ;
-    my $second-time = $cpn.organizations($expected-org).WHICH ;
+    my $second-time = $cpn.organization($expected-org).WHICH ;
     is    $first-time                  , $second-time      , 'repeatedly fetching orgs only creates one';
 }
 

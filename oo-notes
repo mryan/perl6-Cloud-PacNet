@@ -27,28 +27,31 @@ Rules for translation of packet API documentation to method calls on object
     - Where there is two components for the endpoint and the second
       component is a field/ID;
         => Use the ID as a positional parameter
-        => If the first component is a plural, the friendlier alternative uses the singular
+        => If the first component is a plural, replace it with the singular
+           as the need for an ID means we're working with one item.
+        => The friendlier alternate adds '-details' to 'get'
 
-        Packet API: GET /devices/{id}    - retrieve a device
-        Cannonical: $con.GET-devices(id)
-        Alternate:  $con.get-device(id)
+        Packet API: GET /devices/{id}    - retrieve a device's details
+        Cannonical: $con.device(id).GET
+        Alternate:  $con.device(id).get-details
 
         Packet API: PUT /devices/{id}   - update a device
-        Cannonical: $con.PUT-devices(id)
-        Alternate:  $con.update-device(id)
+        Cannonical: $con.device(id).PUT
+        Alternate:  $con.device(id).update
 
     - Where there are three components for the endpoint and the second
       component is a field/ID;
         => Use the first component as the method call on the connection object
         => Use the ID as a positional parameter to that method call
-        => If the first component is a plural, the friendlier alternative uses the singular
+        => If the first component is a plural, replace it with the singular
+           as the need for an ID means we're working with one item.
 
         Packet API: GET /projects/{id}/devices    - retrieve all devices of a project
-        Cannonical: $con.projects(id).GET-devices
+        Cannonical: $con.project(id).GET-devices
         Alternate:  $con.project(id).get-devices
 
         Packet API: POST /projects/{id}/devices   - create a device
-        Cannonical: $con.projects(id).POST-devices
+        Cannonical: $con.project(id).POST-devices
         Alternate:  $con.project(id).create-device
 
 List of the API calls implemented and their alternates

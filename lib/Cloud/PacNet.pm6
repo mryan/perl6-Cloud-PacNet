@@ -17,6 +17,7 @@ has $.current-device  is rw ;          # Expects a UUID
 has $.verified-auth = False ;          # Have we verified the connection yet?
 has $.ua = $!HUA-Class.new ;
 has %!orgs ;
+has %!projects ;
 
 has $!user-id ;
 has $!user-full-name ; 
@@ -62,10 +63,31 @@ class Organization does RESTrole {
     method get-projects   {  self.GET-something("/organizations/$!id/projects")<projects>    }
     method POST-projects  {  self.POST-something("/organizations/$!id/projects")             }
     method create-project {  self.POST-something("/organizations/$!id/projects")             }
+    method GET-devices    {  self.GET-something("/organizations/$!id/devices")               }
+    method get-devices    {  self.GET-something("/organizations/$!id/devices")               }
+    method PUT            {  self.PUT-something("/organizations/$!id")                       }
+    method update         {  self.PUT-something("/organizations/$!id")                       }
 }
 
-method organizations($id) { %!orgs{ $id } //=  Organization.new: :$id :owner(self) }
+method organization($id)  { %!orgs{ $id } //=  Organization.new: :$id :owner(self) }
 method org($id)           { %!orgs{ $id } //=  Organization.new: :$id :owner(self) }
+
+class Project does RESTrole {
+    has $.id is required ;
+    method GET-events        {  self.GET-something("/projects/$!id/events")         }
+    method get-events        {  self.GET-something("/projects/$!id/events")<events> }
+    method GET-devices       {  self.GET-something("/projects/$!id/devices")        }
+    method get-devices       {  self.GET-something("/projects/$!id/devices")        }
+    method POST-devices(|c)  {  self.POST-something("/projects/$!id/devices", |c)   }
+    method create-device(|c) {  self.POST-something("/projects/$!id/devices", |c)   }
+    method GET               {  self.GET-something("/projects/$!id")                }
+    method get-details       {  self.GET-something("/projects/$!id")                }
+    method PUT(|c)           {  self.PUT-something("/projects/$!id", |c)            }
+    method update(|c)        {  self.PUT-something("/projects/$!id", |c)            }
+    method DELETE            {  self.DELETE-something("/projects/$!id")             }
+}
+
+method project($id)     { %!projects{ $id } //=  Project.new: :$id :owner(self) }
 
 method GET-user           {  self.GET-something('user')                         }
 method get-user           {  self.GET-something('user')                         }
