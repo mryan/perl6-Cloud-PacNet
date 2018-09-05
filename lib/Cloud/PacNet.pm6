@@ -15,7 +15,6 @@ has $.current-org is rw ;              # Expects a UUID
 has $.current-project is rw ;          # Expects a UUID
 has $.current-device  is rw ;          # Expects a UUID
 has $.verified-auth = False ;          # Have we verified the connection yet?
-has Bool $.verify = True ;             # Verify token at object creation time?
 has $.ua = $!HUA-Class.new ;
 
 has $!user-id ;
@@ -25,7 +24,7 @@ has $!default-project-id ;
 has %!minimum-headers = %(  :X-Auth-Token($!API-token) ,
                             :Accept<application/json>) ;
 submethod TWEAK {
-    self.verify-auth if $!verify ;
+    self.verify-auth ;
     $!owner = self ;
 }
 
