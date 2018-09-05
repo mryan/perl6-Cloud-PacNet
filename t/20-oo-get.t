@@ -25,8 +25,8 @@ subtest 'Initial connection' => {
     $cpn.verify-auth ;
     like  $cpn.current-org , /^^ <uuid> $$/,  "Got an org id" ;
     
-    # gist starts with "User Name";
-    like  $cpn.gist , /^^  'User Name:  John Doe' /,  "Gist looks ok" ;
+    # gist has "User Name";
+    like  $cpn.gist , / 'User Name:  John Doe' /,  "Gist looks ok" ;
 }
 
 subtest 'user' => {
