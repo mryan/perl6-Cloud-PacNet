@@ -45,15 +45,15 @@ method verify-auth {
 method gist {
     $!verified-auth ??
         qq:to/END_HERE/
-        Verified instance of $?CLASS
+        Verified instance of Cloud::PacNet
         User Name:  $!user-full-name
         User ID:    $!user-id
         Org ID:     $!default-org-id
-        Project ID: { $!default-project-id // "[Not Specified]" }
         END_HERE
     !!
         "Unverified instance of $?CLASS"
 }
+        # Project ID: { $!default-project-id // "[Not Specified]" }
 
 method GET-user           {  self!GET-something('user')                         }
 method get-user           {  self!GET-something('user')                         }
@@ -70,7 +70,9 @@ method get-spot-prices    {  self!GET-something('market/spot/prices')<spot_marke
 
 method !GET-something($endpoint) {
     self.verify-auth unless $!verified-auth ;
-    with $!ua.get: URL.IO.add($endpoint) , |%!minimum-headers {
+    my $req = HTTP::Request.new: GET => URL.IO.add($endpoint).Str, |%!minimum-headers ;
+
+    with $!ua.request: $req  {
         .is-success ??
             # A successful get is presumed to have content
             return from-json( .content ) 
@@ -91,11 +93,11 @@ method !PUT-something($endpoint, *%content) {
     %headers<Content-Type> = 'application/json' ;
     my $req = HTTP::Request.new: PUT => URL.IO.add($endpoint).Str, |%headers ;
     $req.add-content: to-json( %content );
-    with HTTP::UserAgent.new(:debug).request: $req  {
+    with $!ua.request: $req  {
         .is-success ??
             .has-content ??
-                # return from-json( .content ) 
-                return  .content  
+                return from-json( .content ) 
+                # return  .content  
             !!
                 True
         !!    
@@ -115,16 +117,37 @@ method !POST-something($endpoint, *%content) {
     %headers<Content-Type> = 'application/json' ;
     my $req = HTTP::Request.new: POST => URL.IO.add($endpoint).Str, |%headers ;
     $req.add-content: to-json( %content );
-    with HTTP::UserAgent.new(:debug).request: $req  {
+    with $!ua.request: $req  {
         .is-success ??
             .has-content ??
-                # return from-json( .content ) 
-                return  .content  
+                return from-json( .content ) 
+                # return  .content  
             !!
                 True
         !!    
             fail qq:to/END_HERE/
             Error while POSTing: {.status-line}
+            { .content if .has-content }
+            END_HERE
+    }
+}
+
+method DELETE-projects($id)        { self!DELETE-something("/projects/$id")  }
+
+method !DELETE-something($endpoint) {
+    self.verify-auth unless $!verified-auth ;
+    my $req = HTTP::Request.new: DELETE => URL.IO.add($endpoint).Str, |%!minimum-headers ;
+
+    with $!ua.request: $req  {
+        .is-success ??
+            .has-content ??
+                return from-json( .content ) 
+                # return  .content  
+            !!
+                True
+        !!    
+            fail qq:to/END_HERE/
+            Error while DELETEing: {.status-line}
             { .content if .has-content }
             END_HERE
     }
