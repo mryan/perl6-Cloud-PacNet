@@ -26,6 +26,7 @@ has %!minimum-headers = %(  :X-Auth-Token($!API-token) ,
                             :Accept<application/json>) ;
 submethod TWEAK {
     self.verify-auth if $!verify ;
+    $!owner = self ;
 }
 
 method verify-auth {
