@@ -1,8 +1,9 @@
-unit class Cloud::PacNet ;
 use JSON::Fast  ;
 use Config::JSON '';
 use HTTP::UserAgent ;
-use Data::Dump::Tree ;
+use Cloud::PacNet::RESTrole ;
+
+unit class Cloud::PacNet does RESTrole ;
 
 constant DefaultConfigFile = %*ENV<HOME> ~ '/.cloud-pacnet.json' ;
 constant URL = 'https://api.packet.net' ;
@@ -13,12 +14,12 @@ has $.HUA-Class = HTTP::UserAgent ;    # For testing
 has $.current-org is rw ;              # Expects a UUID
 has $.current-project is rw ;          # Expects a UUID
 has $.current-device  is rw ;          # Expects a UUID
+has $.verified-auth = False ;          # Have we verified the connection yet?
 has Bool $.verify = True ;             # Verify token at object creation time?
+has $.ua = $!HUA-Class.new ;
 
-has $!ua = $!HUA-Class.new ;
 has $!user-id ;
 has $!user-full-name ; 
-has $!verified-auth = False ;
 has $!default-org-id ;
 has $!default-project-id ;
 has %!minimum-headers = %(  :X-Auth-Token($!API-token) ,
@@ -55,103 +56,24 @@ method gist {
 }
         # Project ID: { $!default-project-id // "[Not Specified]" }
 
-method GET-user           {  self!GET-something('user')                         }
-method get-user           {  self!GET-something('user')                         }
-method GET-organizations  {  self!GET-something('organizations')                }
-method get-orgs           {  self!GET-something('organizations')<organizations> }
-method GET-projects       {  self!GET-something('projects')                     }
-method get-projects       {  self!GET-something('projects')<projects>           }
-method GET-facilities     {  self!GET-something('facilities')                   }
-method get-facilities     {  self!GET-something('facilities')<facilities>       }
-method GET-plans          {  self!GET-something('plans')                        }
-method get-plans          {  self!GET-something('plans')<plans>                 }
-method GET-market-spot-prices {  self!GET-something('market/spot/prices')       }
-method get-spot-prices    {  self!GET-something('market/spot/prices')<spot_market_prices> }
+method GET-user           {  self.GET-something('user')                         }
+method get-user           {  self.GET-something('user')                         }
+method GET-organizations  {  self.GET-something('organizations')                }
+method get-orgs           {  self.GET-something('organizations')<organizations> }
+method GET-projects       {  self.GET-something('projects')                     }
+method get-projects       {  self.GET-something('projects')<projects>           }
+method GET-facilities     {  self.GET-something('facilities')                   }
+method get-facilities     {  self.GET-something('facilities')<facilities>       }
+method GET-plans          {  self.GET-something('plans')                        }
+method get-plans          {  self.GET-something('plans')<plans>                 }
+method GET-market-spot-prices {  self.GET-something('market/spot/prices')       }
+method get-spot-prices    {  self.GET-something('market/spot/prices')<spot_market_prices> }
 
-method !GET-something($endpoint) {
-    self.verify-auth unless $!verified-auth ;
-    my $req = HTTP::Request.new: GET => URL.IO.add($endpoint).Str, |%!minimum-headers ;
+method PUT-projects($id, |c)        { self.PUT-something("/projects/$id", |c)  }
 
-    with $!ua.request: $req  {
-        .is-success ??
-            # A successful get is presumed to have content
-            return from-json( .content ) 
-        !!    
-            fail qq:to/END_HERE/
-            Error while GETing: {.status-line}
-            { .content if .has-content }
-            END_HERE
-    }
-}
+method POST-projects(|c)        { self.POST-something("/projects", |c)  }
 
-method PUT-projects($id, |c)        { self!PUT-something("/projects/$id", |c)  }
-
-method !PUT-something($endpoint, *%content) {
-    self.verify-auth unless $!verified-auth ;
-    
-    my %headers = %!minimum-headers ;
-    %headers<Content-Type> = 'application/json' ;
-    my $req = HTTP::Request.new: PUT => URL.IO.add($endpoint).Str, |%headers ;
-    $req.add-content: to-json( %content );
-    with $!ua.request: $req  {
-        .is-success ??
-            .has-content ??
-                return from-json( .content ) 
-                # return  .content  
-            !!
-                True
-        !!    
-            fail qq:to/END_HERE/
-            Error while PUTing: {.status-line}
-            { .content if .has-content }
-            END_HERE
-    }
-}
-
-method POST-projects(|c)        { self!POST-something("/projects", |c)  }
-
-method !POST-something($endpoint, *%content) {
-    self.verify-auth unless $!verified-auth ;
-    
-    my %headers = %!minimum-headers ;
-    %headers<Content-Type> = 'application/json' ;
-    my $req = HTTP::Request.new: POST => URL.IO.add($endpoint).Str, |%headers ;
-    $req.add-content: to-json( %content );
-    with $!ua.request: $req  {
-        .is-success ??
-            .has-content ??
-                return from-json( .content ) 
-                # return  .content  
-            !!
-                True
-        !!    
-            fail qq:to/END_HERE/
-            Error while POSTing: {.status-line}
-            { .content if .has-content }
-            END_HERE
-    }
-}
-
-method DELETE-projects($id)        { self!DELETE-something("/projects/$id")  }
-
-method !DELETE-something($endpoint) {
-    self.verify-auth unless $!verified-auth ;
-    my $req = HTTP::Request.new: DELETE => URL.IO.add($endpoint).Str, |%!minimum-headers ;
-
-    with $!ua.request: $req  {
-        .is-success ??
-            .has-content ??
-                return from-json( .content ) 
-                # return  .content  
-            !!
-                True
-        !!    
-            fail qq:to/END_HERE/
-            Error while DELETEing: {.status-line}
-            { .content if .has-content }
-            END_HERE
-    }
-}
+method DELETE-projects($id)        { self.DELETE-something("/projects/$id")  }
 
 my sub err-message($_) { "Error {.code}: {.status-line}" }
 
@@ -179,7 +101,7 @@ our sub pn-get( :$endpoint,
 
 my constant $MAX_AGE = 24 * 3600;  # 1 day
 
-sub pn-fetch-cache($token, :$ConfigFile = DefaultConfigFile) is export(:pn-fetch-cache) {
+our sub pn-fetch-cache($token, :$ConfigFile = DefaultConfigFile) is export(:pn-get) {
     die "Cannot read config file $ConfigFile" unless $ConfigFile.IO ~~ :r ;
     my $then = DateTime.new: jconf $ConfigFile.IO, 'cache-timestamp' ;
     if now - $then.Instant > $MAX_AGE {
@@ -192,7 +114,7 @@ sub pn-fetch-cache($token, :$ConfigFile = DefaultConfigFile) is export(:pn-fetch
     return $data
 }
 
-sub update_cache($token, :$ConfigFile) {
+our sub update_cache($token, :$ConfigFile) is export(:pn-get) {
     my %cache := pn-get(:endpoint<facilities>, :$token, :perl6);
     %cache<plans> := pn-get(:endpoint<plans>, :$token, :perl6)<plans> ;
     jconf-write $ConfigFile.IO, 'cache', %cache ;
