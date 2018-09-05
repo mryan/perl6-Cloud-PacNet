@@ -16,6 +16,7 @@ has $.current-project is rw ;          # Expects a UUID
 has $.current-device  is rw ;          # Expects a UUID
 has $.verified-auth = False ;          # Have we verified the connection yet?
 has $.ua = $!HUA-Class.new ;
+has %!orgs ;
 
 has $!user-id ;
 has $!user-full-name ; 
@@ -54,7 +55,17 @@ method gist {
     !!
         "Unverified instance of $?CLASS"
 }
-        # Project ID: { $!default-project-id // "[Not Specified]" }
+
+class Organization does RESTrole {
+    has $.id is required ;
+    method GET-projects   {  self.GET-something("/organizations/$!id/projects")              }
+    method get-projects   {  self.GET-something("/organizations/$!id/projects")<projects>    }
+    method POST-projects  {  self.POST-something("/organizations/$!id/projects")             }
+    method create-project {  self.POST-something("/organizations/$!id/projects")             }
+}
+
+method organizations($id) { %!orgs{ $id } //=  Organization.new: :$id :owner(self) }
+method org($id)           { %!orgs{ $id } //=  Organization.new: :$id :owner(self) }
 
 method GET-user           {  self.GET-something('user')                         }
 method get-user           {  self.GET-something('user')                         }
