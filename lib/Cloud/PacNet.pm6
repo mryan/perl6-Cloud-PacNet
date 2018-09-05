@@ -82,6 +82,7 @@ our sub pn-get( :$endpoint,
             :$token,
             :$debug = False,
        Bool :$perl6 = False,
+            :$HUA-Class = HTTP::UserAgent,
             *%headers is copy) is export(:pn-get) {
 
     %headers<User-Agent>   //=  'perl6-Cloud::PacNet' ;
@@ -90,7 +91,7 @@ our sub pn-get( :$endpoint,
 
     my $req = HTTP::Request.new: GET => URL.IO.add($endpoint).Str, |%headers ;
 
-    with HTTP::UserAgent.new(:throw-exceptions, :$debug).request: $req  {
+    with $HUA-Class.new(:throw-exceptions, :$debug).request: $req  {
         $perl6 ?? 
             from-json .content
             !!
