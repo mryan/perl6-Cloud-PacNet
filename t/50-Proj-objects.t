@@ -8,8 +8,8 @@ use Data::Dump::Tree ;
 
 plan 3 ;
 
-my $token = 'secret-bizzo' ;
-# my $token = %*ENV<PN_TOKEN> ;
+my $API-token = 'secret-bizzo' ;
+# my $API-token = %*ENV<PN_TOKEN> ;
 my $HUA-Class = Fake::HTTPua ;
 
 my token lcxdigit {  <[0..9a..f]> }  # Lowercase hex digit
@@ -19,13 +19,18 @@ my token uuid     {
                     <lcxdigit> ** 12
                   }
 
-my $cpn = Cloud::PacNet.new(:$token, :$HUA-Class);  # token compolsory
-my $expected-org = '6c9fe02e-3422-49fa-1193-95633367e00a' ;
-
-subtest 'Initial connection' => {
+my $cpn = Cloud::PacNet.new(:$API-token, :$HUA-Class);  # token compolsory
+my $org-id = '6c9fe02e-3422-49fa-1193-95633367e00a' ;
+my $response := $cpn.org($org-id).create-project( :name("Testing Project") ,
+                                                  :customdata('{ "Some-key": "Some stuff" }')
+                                                );
+my $proj-id = '5fc2fc2e-39f4-4953-8c28-8a3b8a03261f';
+subtest 'Initial connection setup' => {
     plan 2;
 
-    # verified connection should result in a populated current-org
+    # should be able to get details using the proj object
+    my $details = $cpn.project($proj-id).get-details ;
+
     like  $cpn.current-org , /^^ <uuid> $$/,  "Got an org id" ;
     is    $cpn.current-org , $expected-org,  "Correct org id"
 }

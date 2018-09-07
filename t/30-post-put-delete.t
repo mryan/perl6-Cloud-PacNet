@@ -8,8 +8,8 @@ use Data::Dump::Tree ;
 
 plan 4 ;
 
-my $API-token = 'secret-bizzo' ;
-# my $API-token = %*ENV<PN_TOKEN> ;
+my $token = 'secret-bizzo' ;
+# my $token = %*ENV<PN_TOKEN> ;
 my $HUA-Class = Fake::HTTPua ;
 
 my token lcxdigit {  <[0..9a..f]> }  # Lowercase hex digit
@@ -19,7 +19,7 @@ my token uuid     {
                     <lcxdigit> ** 12
                   }
 
-my $cpn = Cloud::PacNet.new(:$API-token, :$HUA-Class);  # token compolsory
+my $cpn = Cloud::PacNet.new(:$token, :$HUA-Class);  # token compolsory
 
 subtest 'Initial connection' => {
     plan 1;

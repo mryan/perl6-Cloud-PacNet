@@ -6,7 +6,7 @@ use Fake::HTTPua ;
 use Cloud::PacNet ;
 
 plan 7 ;
-my $API-token = 'secret-bizzo' ;
+my $token = 'secret-bizzo' ;
 my $HUA-Class = Fake::HTTPua ;
 
 my token lcxdigit {  <[0..9a..f]> }  # Lowercase hex digit
@@ -16,7 +16,7 @@ my token uuid     {
                     <lcxdigit> ** 12
                   }
 
-my $cpn = Cloud::PacNet.new(:$API-token, :$HUA-Class, :!verify);  # token compolsory
+my $cpn = Cloud::PacNet.new(:$token, :$HUA-Class, :!verify);  # token compolsory
 
 subtest 'Initial connection' => {
     plan 2;

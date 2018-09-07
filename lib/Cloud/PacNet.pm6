@@ -9,13 +9,13 @@ constant DefaultConfigFile = %*ENV<HOME> ~ '/.cloud-pacnet.json' ;
 constant URL = 'https://api.packet.net' ;
 my @REST-methods = <get post put delete> ;
 
-has $.API-token is required ;          # Compolsory
+# has $.token is required ;              # Compolsory
 has $.HUA-Class = HTTP::UserAgent ;    # For testing
 has $.current-org is rw ;              # Expects a UUID
 has $.current-project is rw ;          # Expects a UUID
 has $.current-device  is rw ;          # Expects a UUID
 has $.verified-auth = False ;          # Have we verified the connection yet?
-has $.ua = $!HUA-Class.new ;
+# has $.ua = $!HUA-Class.new ;
 has %!orgs ;
 has %!projects ;
 
@@ -23,11 +23,14 @@ has $!user-id ;
 has $!user-full-name ; 
 has $!default-org-id ;
 has $!default-project-id ;
-has %!minimum-headers = %(  :X-Auth-Token($!API-token) ,
+has %!minimum-headers = %(  :X-Auth-Token($!token) ,
                             :Accept<application/json>) ;
-submethod TWEAK {
+
+submethod TWEAK { 
+    # $.ua in RESTrole, tweaked here (rather than in the role) as it's only instances
+    # of this class that instantiate the type object provided by the module user
+    $!ua = $!HUA-Class.new ;
     self.verify-auth ;
-    $!owner = self ;
 }
 
 method verify-auth {
@@ -54,30 +57,37 @@ method gist {
         Org ID:     $!default-org-id
         END_HERE
     !!
-        "Unverified instance of $?CLASS"
+        "Unverified instance of Cloud::PacNet"
 }
 
 class Organization does RESTrole {
-    has $.id is required ;
+    has $.id    is required ;
+
     method GET-projects   {  self.GET-something("/organizations/$!id/projects")              }
     method get-projects   {  self.GET-something("/organizations/$!id/projects")<projects>    }
     method POST-projects  {  self.POST-something("/organizations/$!id/projects")             }
     method create-project {  self.POST-something("/organizations/$!id/projects")             }
+
     method GET-devices    {  self.GET-something("/organizations/$!id/devices")               }
     method get-devices    {  self.GET-something("/organizations/$!id/devices")               }
-    method PUT            {  self.PUT-something("/organizations/$!id")                       }
-    method update         {  self.PUT-something("/organizations/$!id")                       }
+
+    method GET               {  self.GET-something("/organizations/$!id")                }
+    method get-details       {  self.GET-something("/organizations/$!id")                }
+    method PUT(|c)        {  self.PUT-something("/organizations/$!id", |c)                   }
+    method update(|c)     {  self.PUT-something("/organizations/$!id", |c)                   }
+    method DELETE            {  self.DELETE-something("/organizations/$!id")             }
 }
 
-method organization($id)  { %!orgs{ $id } //=  Organization.new: :$id :owner(self) }
-method org($id)           { %!orgs{ $id } //=  Organization.new: :$id :owner(self) }
+method organization($id)  { %!orgs{ $id } //=  Organization.new: :$id, :$!ua, :$!token }
+method org($id)           { %!orgs{ $id } //=  Organization.new: :$id, :$!ua, :$!token }
 
 class Project does RESTrole {
-    has $.id is required ;
+    has $.id    is required ;
+
     method GET-events        {  self.GET-something("/projects/$!id/events")         }
     method get-events        {  self.GET-something("/projects/$!id/events")<events> }
     method GET-devices       {  self.GET-something("/projects/$!id/devices")        }
-    method get-devices       {  self.GET-something("/projects/$!id/devices")        }
+    method get-devices       {  self.GET-something("/projects/$!id/devices")<devices> }
     method POST-devices(|c)  {  self.POST-something("/projects/$!id/devices", |c)   }
     method create-device(|c) {  self.POST-something("/projects/$!id/devices", |c)   }
     method GET               {  self.GET-something("/projects/$!id")                }
@@ -87,7 +97,7 @@ class Project does RESTrole {
     method DELETE            {  self.DELETE-something("/projects/$!id")             }
 }
 
-method project($id)     { %!projects{ $id } //=  Project.new: :$id :owner(self) }
+method project($id)     { %!projects{ $id } //=  Project.new: :$id, :$!ua, :$!token }
 
 method GET-user           {  self.GET-something('user')                         }
 method get-user           {  self.GET-something('user')                         }
@@ -102,10 +112,12 @@ method get-plans          {  self.GET-something('plans')<plans>                 
 method GET-market-spot-prices {  self.GET-something('market/spot/prices')       }
 method get-spot-prices    {  self.GET-something('market/spot/prices')<spot_market_prices> }
 
+# Not supporting the creation of whole organizations at this point
+# method POST-organizations(|c)   { self.POST-something("/organizations", |c)  }
+# method create-org(|c)           { self.POST-something("/organizations", |c)  }
+
 method PUT-projects($id, |c)        { self.PUT-something("/projects/$id", |c)  }
-
 method POST-projects(|c)        { self.POST-something("/projects", |c)  }
-
 method DELETE-projects($id)        { self.DELETE-something("/projects/$id")  }
 
 my sub err-message($_) { "Error {.code}: {.status-line}" }
