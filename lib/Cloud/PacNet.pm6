@@ -25,21 +25,20 @@ has $!user-full-name ;
 has $!default-org-id ;
 has $!default-project-id ;
 
-class SHARED {
+class Shared {
     has $.ua ;
-    has $.token;
     has $.URL = 'https://api.packet.net' ;
-    has $.min-headers ;
+    has %.min-headers ;
+    has $.response is rw ;
 }
 
 submethod TWEAK { 
-    # $.ua in RESTrole, tweaked here (rather than in the role) as it's only instances
-    # of this class that instantiate the type object provided by the module user
-
-    $!shared = SHARED.new:  :ua($!HUA-Class.new) , :$!token ,
-                            :min-headers( %(  :X-Auth-Token($!token) ,
-                                               :Accept<application/json>
-                                          ));
+    # Setup shared data b/w this class and component classes
+    $!shared = Shared.new:  :ua($!HUA-Class.new) ,
+                            :min-headers(  
+                                :X-Auth-Token($!token) ,
+                                :Accept<application/json>
+                            );
     self.verify-auth ;
 }
 

@@ -2,19 +2,17 @@ use JSON::Fast  ;
 use HTTP::UserAgent ;
 
 unit role RESTrole ;
-has $.shared ;
+has $.shared handles 'response' ;
 
 method GET-something($endpoint) {
     my $req = HTTP::Request.new: GET => $!shared.URL.IO.add($endpoint).Str, 
-                                 :X-Auth-Token($!shared.token) ,
-                                 :Accept<application/json>  ;
+                                 |$!shared.min-headers ;
     self!return-results:  $!shared.ua.request($req)
 }
 
 method PUT-something($endpoint, *%content) {
     my $req = HTTP::Request.new: PUT => $!shared.URL.IO.add($endpoint).Str,
-                                 :X-Auth-Token($!shared.token) ,
-                                 :Content-Type<application/json> ,
+                                 |$!shared.min-headers,
                                  :Accept<application/json>  ;
     $req.add-content: to-json( %content );
     self!return-results:  $!shared.ua.request($req)
@@ -23,8 +21,7 @@ method PUT-something($endpoint, *%content) {
 
 method POST-something($endpoint, *%content) {
     my $req = HTTP::Request.new: POST => $!shared.URL.IO.add($endpoint).Str,
-                                 :X-Auth-Token($!shared.token) ,
-                                 :Content-Type<application/json> ,
+                                 |$!shared.min-headers,
                                  :Accept<application/json>  ;
     $req.add-content: to-json( %content );
     self!return-results:  $!shared.ua.request($req)
@@ -32,12 +29,12 @@ method POST-something($endpoint, *%content) {
 
 method DELETE-something($endpoint) {
     my $req = HTTP::Request.new: DELETE => $!shared.URL.IO.add($endpoint).Str,
-                                 :X-Auth-Token($!shared.token),
-                                 :Accept<application/json>  ;
+                                 |$!shared.min-headers ;
     self!return-results:  $!shared.ua.request($req)
 }
 
 method !return-results($response) {
+    $!shared.response = $response ;
     with $response {
         .is-success ??
             .has-content ??
