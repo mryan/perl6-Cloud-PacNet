@@ -6,7 +6,7 @@ use Cloud::PacNet::RESTrole ;
 unit class Cloud::PacNet does RESTrole ;
 
 constant DefaultConfigFile = %*ENV<HOME> ~ '/.cloud-pacnet.json' ;
-constant URL = 'https://api.packet.net' ;
+# constant URL = 'https://api.packet.net' ;
 my @REST-methods = <get post put delete> ;
 
 # has $.token is required ;              # Compolsory
@@ -16,6 +16,7 @@ has $.current-project is rw ;          # Expects a UUID
 has $.current-device  is rw ;          # Expects a UUID
 has $.verified-auth = False ;          # Have we verified the connection yet?
 # has $.ua = $!HUA-Class.new ;
+
 has %!orgs ;
 has %!projects ;
 
@@ -23,18 +24,20 @@ has $!user-id ;
 has $!user-full-name ; 
 has $!default-org-id ;
 has $!default-project-id ;
-has %!minimum-headers = %(  :X-Auth-Token($!token) ,
-                            :Accept<application/json>) ;
 
 submethod TWEAK { 
     # $.ua in RESTrole, tweaked here (rather than in the role) as it's only instances
     # of this class that instantiate the type object provided by the module user
-    $!ua = $!HUA-Class.new ;
+
+    $.shared.ua = $!HUA-Class.new ;
+    $.shared.token = $token ;
+    $.shared.min-headers = %(  :X-Auth-Token($!token) ,
+                               :Accept<application/json>) ;
     self.verify-auth ;
 }
 
 method verify-auth {
-    with $!ua.get: URL ~ '/user' , |%!minimum-headers {
+    with $.shared.ua.get: $.shared.URL ~ '/user' , |$.shared.min-headers {
         if .is-success {
             my %user-data := from-json( .content ) ;
             ( $!user-id , $!user-full-name ) = %user-data<id full_name> ;
@@ -78,8 +81,8 @@ class Organization does RESTrole {
     method DELETE         {  self.DELETE-something("/organizations/$!id")             }
 }
 
-method organization($id)  { %!orgs{ $id } //=  Organization.new: :$id, :$!ua, :$!token }
-method org($id)           { %!orgs{ $id } //=  Organization.new: :$id, :$!ua, :$!token }
+method organization($id)  { %!orgs{ $id } //=  Organization.new: :$id, :$.shared }
+method org($id)           { %!orgs{ $id } //=  Organization.new: :$id, :$.shared }
 
 class Project does RESTrole {
     has $.id    is required ;
@@ -97,7 +100,7 @@ class Project does RESTrole {
     method DELETE            {  self.DELETE-something("/projects/$!id")             }
 }
 
-method project($id)     { %!projects{ $id } //=  Project.new: :$id, :$!ua, :$!token }
+method project($id)     { %!projects{ $id } //=  Project.new: :$id, :$.shared }
 
 method GET-user           {  self.GET-something('user')                         }
 method get-user           {  self.GET-something('user')                         }
