@@ -60,6 +60,6 @@ subtest 'delete' => {
     my $response := $cpn.DELETE-projects( '5fc2fc2e-39f4-4953-8c28-8a3b8a03261f' );
     .throw without $response ;
 
-    isa-ok $response           , Bool                  , 'reponse is Bool' ;
-    is     $response           , True                  , 'and True' ;
+    isa-ok $response           , Str                  , 'reponse is Str' ;
+    is     $response           , ""                   , 'and empty' ;
 }

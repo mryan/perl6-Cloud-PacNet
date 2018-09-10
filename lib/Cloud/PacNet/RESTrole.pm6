@@ -39,9 +39,8 @@ method !return-results($response) {
         .is-success ??
             .has-content ??
                 return from-json( .content ) 
-                # return  .content  
             !!
-                True
+                ""
         !!    
             fail qq:to/END_HERE/
             Error while DELETEing: {.status-line}
