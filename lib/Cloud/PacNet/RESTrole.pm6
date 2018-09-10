@@ -2,7 +2,7 @@ use JSON::Fast  ;
 use HTTP::UserAgent ;
 
 unit role RESTrole ;
-has $.shared handles <response request> ;
+has $.shared handles <ua response request> ;
 
 method GET-something($endpoint) {
     self.request = HTTP::Request.new: GET => $!shared.URL.IO.add($endpoint).Str, 
@@ -40,7 +40,7 @@ method !return-results($response) {
             .has-content ??
                 return from-json( .content ) 
             !!
-                "" but True
+                ""
         !!    
             fail qq:to/END_HERE/
             Error while { self.request.method }ing { self.request.uri.path }: {.status-line}
