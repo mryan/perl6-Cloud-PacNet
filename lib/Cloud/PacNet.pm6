@@ -36,7 +36,8 @@ submethod TWEAK {
     $!shared = Shared.new:  :ua($!HUA-Class.new) ,
                             :min-headers(  
                                 :X-Auth-Token($!token) ,
-                                :Accept<application/json>
+                                :Accept<application/json> ,
+                                :User-Agent<perl6-Cloud::PacNet> ;
                             );
     self.verify-auth if $!verify
 }
