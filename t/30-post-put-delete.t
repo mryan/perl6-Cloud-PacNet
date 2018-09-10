@@ -25,7 +25,7 @@ subtest 'Initial connection' => {
     plan 1;
 
     # verified connection should result in a populated current-org
-    like  $cpn.current-org , /^^ <uuid> $$/,  "Got an org id" ;
+    like  $cpn.user.default-org.id , /^^ <uuid> $$/,  "Got an org id" ;
 }
 
 subtest 'post' => {

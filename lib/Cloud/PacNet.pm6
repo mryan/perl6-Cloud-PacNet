@@ -6,24 +6,22 @@ use Cloud::PacNet::RESTrole ;
 unit class Cloud::PacNet does RESTrole ;
 
 constant DefaultConfigFile = %*ENV<HOME> ~ '/.cloud-pacnet.json' ;
-# constant URL = 'https://api.packet.net' ;
 my @REST-methods = <get post put delete> ;
 
 has $.token is required ;              # Compolsory
 has $.HUA-Class = HTTP::UserAgent ;    # For testing
-has $.current-org is rw ;              # Expects a UUID
-has $.current-project is rw ;          # Expects a UUID
-has $.current-device  is rw ;          # Expects a UUID
-has $.verified-auth = False ;          # Have we verified the connection yet?
-# has $.ua = $!HUA-Class.new ;
+has $.verify = True ;                  # Verify auth at instantiation?
+has $.user ;
 
 has %!orgs ;
 has %!projects ;
 
-has $!user-id ;
-has $!user-full-name ; 
-has $!default-org-id ;
-has $!default-project-id ;
+class User {
+    has $.id ;
+    has $.full-name ; 
+    has $.default-org ;
+    has $.default-project ;
+}
 
 class Shared {
     has $.ua ;
@@ -39,34 +37,16 @@ submethod TWEAK {
                                 :X-Auth-Token($!token) ,
                                 :Accept<application/json>
                             );
-    self.verify-auth ;
-}
-
-method verify-auth {
-    with $!shared.ua.get: $!shared.URL ~ '/user' , |$!shared.min-headers {
-        if .is-success {
-            my %user-data := from-json( .content ) ;
-            ( $!user-id , $!user-full-name ) = %user-data<id full_name> ;
-            $!current-org = $!default-org-id  = %user-data<default_organization_id> ;
-            $!current-project = $!default-project-id = %user-data<default_project_id> ;
-            $!verified-auth = True ;
-        }
-        else {
-            fail err-message($_)
-        }
-    }
+    self.verify-auth if $!verify
 }
 
 method gist {
-    $!verified-auth ??
-        qq:to/END_HERE/
-        Verified instance of Cloud::PacNet
-        User Name:  $!user-full-name
-        User ID:    $!user-id
-        Org ID:     $!default-org-id
-        END_HERE
-    !!
-        "Unverified instance of Cloud::PacNet"
+    qq:to/END_HERE/
+    Instance of Cloud::PacNet
+    User Name:  { $!user.full-name }
+    User ID:    { $!user.id }
+    Org ID:     { $!user.default-org.id }
+    END_HERE
 }
 
 class Organization does RESTrole {
@@ -107,6 +87,24 @@ class Project does RESTrole {
 }
 
 method project($id)     { %!projects{ $id } //=  Project.new: :$id, :$!shared }
+
+method verify-auth {
+    with $!shared.ua.get: $!shared.URL ~ '/user' , |$!shared.min-headers {
+        if .is-success {
+            my %user-data := from-json( .content ) ;
+            my $id = %user-data<default_organization_id> ;
+            %!orgs{ $id } =  Organization.new: :$id , :$!shared ;
+            $!user = User.new:
+                :id(           %user-data<id>        ) ,
+                :full-name(    %user-data<full_name> ) ,
+                :default-org(  %!orgs{ $id }         ) ;
+                # Set default project
+        }
+        else {
+            fail err-message($_)
+        }
+    }
+}
 
 method GET-user           {  self.GET-something('user')                         }
 method get-user           {  self.GET-something('user')                         }

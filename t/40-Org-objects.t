@@ -20,22 +20,23 @@ my token uuid     {
                   }
 
 my $cpn = Cloud::PacNet.new(:$token, :$HUA-Class);  # token compolsory
-my $expected-org = '6c9fe02e-3422-49fa-1193-95633367e00a' ;
+my $default-org = $cpn.user.default-org ;
+my $expected-org-id = '6c9fe02e-3422-49fa-1193-95633367e00a' ;
 
 subtest 'Initial connection' => {
     plan 2;
 
-    # verified connection should result in a populated current-org
-    like  $cpn.current-org , /^^ <uuid> $$/,  "Got an org id" ;
-    is    $cpn.current-org , $expected-org,  "Correct org id"
+    # verified connection should result in a populated .user.default-org.id
+    like  $default-org.id , /^^ <uuid> $$/,  "Got an org id" ;
+    is    $default-org.id , $expected-org-id,  "Correct org id"
 }
 
 subtest 'orgs(id).get-projects' => {
     plan 10 ;
 
-    my $specific-org = $cpn.org($expected-org) ;
+    my $specific-org = $cpn.org($expected-org-id) ;
     isa-ok $specific-org      , Cloud::PacNet::Organization, 'Able to fetch an Organization' ;
-    is     $specific-org.id   , $expected-org,               'Organization object has correct id' ;
+    is     $specific-org.id   , $expected-org-id,               'Organization object has correct id' ;
 
     my $projects := $specific-org.GET-projects ;
     .throw without $projects ;
@@ -49,14 +50,14 @@ subtest 'orgs(id).get-projects' => {
     isa-ok $projects<meta><total>      ,   1               , 'projects<meta><total> is correct';
 
     my $first-time = $specific-org.WHICH ;
-    my $second-time = $cpn.organization($expected-org).WHICH ;
+    my $second-time = $cpn.organization($expected-org-id).WHICH ;
     is    $first-time                  , $second-time      , 'repeatedly fetching orgs only creates one';
 }
 
 subtest 'orgs(id).POST-projects' => {
     plan 3 ;
 
-    my $id = $expected-org ;
+    my $id = $expected-org-id ;
     my $response := $cpn.org($id).create-project( :name("Testing Project") ,
                                                   :customdata('{ "Some-key": "Some stuff" }')
                                                 );

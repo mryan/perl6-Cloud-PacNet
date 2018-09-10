@@ -23,7 +23,7 @@ subtest 'Initial connection' => {
 
     # verify-auth should result in a populated current-org
     # $cpn.verify-auth ;     
-    like  $cpn.current-org , /^^ <uuid> $$/,  "Got an org id" ;
+    like  $cpn.user.default-org.id , /^^ <uuid> $$/,  "Got an org id" ;
     
     # gist has "User Name";
     like  $cpn.gist , / 'User Name:  John Doe' /,  "Gist looks ok" ;
