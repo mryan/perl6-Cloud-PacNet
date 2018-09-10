@@ -93,12 +93,11 @@ method project($id)     { %!projects{ $id } //=  Project.new: :$id, :$!shared }
 method verify-auth {
     with self.GET-user {
         # We now have a hash of user data as topic
-        my $id = .<default_organization_id> ;
-        %!orgs{ $id } =  Organization.new: :$id , :$!shared ;
+        my $default-org = self.org: .<default_organization_id> ;
         $!user = User.new:
-            :id(           .<id>       ) ,
-            :full-name(    .<full_name>) ,
-            :default-org(  %!orgs{$id} ) ;
+            :id(        .<id>       ) ,
+            :full-name( .<full_name>) ,
+            :$default-org             ;
             # Set default project
     }
     else {

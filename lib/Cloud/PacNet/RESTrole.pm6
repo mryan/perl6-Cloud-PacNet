@@ -43,7 +43,7 @@ method !return-results($response) {
                 "" but True
         !!    
             fail qq:to/END_HERE/
-            Error while { self.request.method }ing: {.status-line}
+            Error while { self.request.method }ing { self.request.uri.path }: {.status-line}
             { .content if .has-content }
             END_HERE
     }
