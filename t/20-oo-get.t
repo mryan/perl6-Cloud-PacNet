@@ -16,13 +16,13 @@ my token uuid     {
                     <lcxdigit> ** 12
                   }
 
-my $cpn = Cloud::PacNet.new(:$token, :$HUA-Class, :!verify);  # token compolsory
+my $cpn = Cloud::PacNet.new(:$token, :$HUA-Class);  # token compolsory
 
 subtest 'Initial connection' => {
     plan 2;
 
     # verify-auth should result in a populated current-org
-    $cpn.verify-auth ;
+    # $cpn.verify-auth ;     
     like  $cpn.current-org , /^^ <uuid> $$/,  "Got an org id" ;
     
     # gist has "User Name";

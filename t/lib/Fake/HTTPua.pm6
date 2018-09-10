@@ -11,8 +11,8 @@ my $counter = BagHash.new ;
 
 method !make-unique-name($m, $u is copy) {
     $u ~~ s:i[ ^^ 'http' s? '://' ] = '' ; 
-    my $name = TestDataDir.IO.add($u).add($m) ;
-    $name ~ ++$counter{$name} ~ '.json'
+    my $name = TestDataDir.IO.add($u).add($m).Str ;
+    $name ~= ++$counter{$name} ~ '.json' ;
 }
 
 method get(|c)    { self!emulate: 'get',    |c }

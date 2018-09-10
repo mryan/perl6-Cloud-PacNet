@@ -71,11 +71,11 @@ class Organization does RESTrole {
     method GET-devices    {  self.GET-something("/organizations/$!id/devices")               }
     method get-devices    {  self.GET-something("/organizations/$!id/devices")               }
 
-    method GET               {  self.GET-something("/organizations/$!id")                }
-    method get-details       {  self.GET-something("/organizations/$!id")                }
+    method GET            {  self.GET-something("/organizations/$!id")                }
+    method get-details    {  self.GET-something("/organizations/$!id")                }
     method PUT(|c)        {  self.PUT-something("/organizations/$!id", |c)                   }
     method update(|c)     {  self.PUT-something("/organizations/$!id", |c)                   }
-    method DELETE            {  self.DELETE-something("/organizations/$!id")             }
+    method DELETE         {  self.DELETE-something("/organizations/$!id")             }
 }
 
 method organization($id)  { %!orgs{ $id } //=  Organization.new: :$id, :$!ua, :$!token }
@@ -112,7 +112,7 @@ method get-plans          {  self.GET-something('plans')<plans>                 
 method GET-market-spot-prices {  self.GET-something('market/spot/prices')       }
 method get-spot-prices    {  self.GET-something('market/spot/prices')<spot_market_prices> }
 
-# Not supporting the creation of whole organizations at this point
+# Not supporting the creation of organizations at this point
 # method POST-organizations(|c)   { self.POST-something("/organizations", |c)  }
 # method create-org(|c)           { self.POST-something("/organizations", |c)  }
 
