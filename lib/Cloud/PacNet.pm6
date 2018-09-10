@@ -41,12 +41,13 @@ submethod TWEAK {
 }
 
 method gist {
-    qq:to/END_HERE/
-    Instance of Cloud::PacNet
-    User Name:  { $!user.full-name }
-    User ID:    { $!user.id }
-    Org ID:     { $!user.default-org.id }
-    END_HERE
+    with $!user { qq:to/END_HERE/
+        Instance of Cloud::PacNet
+        User Name:  { .full-name }
+        User ID:    { .id }
+        Org ID:     { .default-org.id }
+        END_HERE 
+    }
 }
 
 class Organization does RESTrole {
