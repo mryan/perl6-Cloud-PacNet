@@ -2,13 +2,7 @@ use JSON::Fast  ;
 use HTTP::UserAgent ;
 
 unit role RESTrole ;
-
-has $.shared = class {            # only "executed" once - when the "outer"
-    has $.ua ;                    # class is instantiated.  Thereafter passed
-    has $.token is required ;     # into component classes on insantiation
-    has $.URL = 'https://api.packet.net' ;
-    has $.min-headers ;
-}
+has $.shared ;
 
 method GET-something($endpoint) {
     my $req = HTTP::Request.new: GET => $!shared.URL.IO.add($endpoint).Str, 
