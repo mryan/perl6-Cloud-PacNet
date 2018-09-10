@@ -90,20 +90,18 @@ class Project does RESTrole {
 method project($id)     { %!projects{ $id } //=  Project.new: :$id, :$!shared }
 
 method verify-auth {
-    with $!shared.ua.get: $!shared.URL ~ '/user' , |$!shared.min-headers {
-        if .is-success {
-            my %user-data := from-json( .content ) ;
-            my $id = %user-data<default_organization_id> ;
-            %!orgs{ $id } =  Organization.new: :$id , :$!shared ;
-            $!user = User.new:
-                :id(           %user-data<id>        ) ,
-                :full-name(    %user-data<full_name> ) ,
-                :default-org(  %!orgs{ $id }         ) ;
-                # Set default project
-        }
-        else {
-            fail err-message($_)
-        }
+    with self.GET-user {
+        # We now have a hash of user data as topic
+        my $id = .<default_organization_id> ;
+        %!orgs{ $id } =  Organization.new: :$id , :$!shared ;
+        $!user = User.new:
+            :id(           .<id>       ) ,
+            :full-name(    .<full_name>) ,
+            :default-org(  %!orgs{$id} ) ;
+            # Set default project
+    }
+    else {
+        fail err-message(self.response)
     }
 }
 
