@@ -28,6 +28,7 @@ class Shared {
     has $.URL = 'https://api.packet.net' ;
     has %.min-headers ;
     has $.response is rw ;
+    has $.request is rw ;
 }
 
 submethod TWEAK { 
@@ -101,7 +102,7 @@ method verify-auth {
             # Set default project
     }
     else {
-        fail err-message(self.response)
+        .throw    # GET-user returns a fail object if request unsuccessfull
     }
 }
 
@@ -126,7 +127,6 @@ method PUT-projects($id, |c)        { self.PUT-something("/projects/$id", |c)  }
 method POST-projects(|c)        { self.POST-something("/projects", |c)  }
 method DELETE-projects($id)        { self.DELETE-something("/projects/$id")  }
 
-my sub err-message($_) { "Error {.code}: {.status-line}" }
 
 # :pn-get
 my \URL = 'https://api.packet.net' ;
