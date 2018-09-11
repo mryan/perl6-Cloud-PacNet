@@ -20,7 +20,7 @@ my token uuid     {
                   }
 
 my $cpn = Cloud::PacNet.new(:$token, :$HUA-Class);  # token compolsory
-my $default-org = $cpn.user.default-org ;
+my $default-org = $cpn.default-org ;
 my $expected-org-id = '6c9fe02e-3422-49fa-1193-95633367e00a' ;
 
 subtest 'Initial connection' => {

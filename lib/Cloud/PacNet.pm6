@@ -2,6 +2,7 @@ use JSON::Fast  ;
 use Config::JSON '';
 use HTTP::UserAgent ;
 use Cloud::PacNet::RESTrole ;
+use Cloud::PacNet::Orgs-Projs-Devs ;
 
 unit class Cloud::PacNet does RESTrole ;
 
@@ -11,17 +12,13 @@ my @REST-methods = <get post put delete> ;
 has $.token is required ;              # Compolsory
 has $.HUA-Class = HTTP::UserAgent ;    # For testing
 has $.verify = True ;                  # Verify auth at instantiation?
-has $.user ;
+has $.default-org ;
+has $.default-project ;
 
 has %!orgs ;
 has %!projects ;
-
-class User {
-    has $.id ;
-    has $.full-name ; 
-    has $.default-org ;
-    has $.default-project ;
-}
+has $!user-id ;
+has $!user-name ; 
 
 class Shared {
     has $.ua ;
@@ -43,63 +40,26 @@ submethod TWEAK {
 }
 
 method gist {
-    with $!user { qq:to/END_HERE/
+    qq:to/END_HERE/
         Instance of Cloud::PacNet
-        User Name:  { .full-name }
-        User ID:    { .id }
-        Org ID:     { .default-org.id }
+        User Name:  { $!user-name }
+        User ID:    { $!user-id }
+        Org ID:     { $!default-org.id }
         END_HERE 
-    }
-}
-
-class Organization does RESTrole {
-    has $.id    is required ;
-
-    method GET-projects   {  self.GET-something("/organizations/$!id/projects")              }
-    method get-projects   {  self.GET-something("/organizations/$!id/projects")<projects>    }
-    method POST-projects  {  self.POST-something("/organizations/$!id/projects")             }
-    method create-project {  self.POST-something("/organizations/$!id/projects")             }
-
-    method GET-devices    {  self.GET-something("/organizations/$!id/devices")               }
-    method get-devices    {  self.GET-something("/organizations/$!id/devices")               }
-
-    method GET            {  self.GET-something("/organizations/$!id")                }
-    method get-details    {  self.GET-something("/organizations/$!id")                }
-    method PUT(|c)        {  self.PUT-something("/organizations/$!id", |c)                   }
-    method update(|c)     {  self.PUT-something("/organizations/$!id", |c)                   }
-    method DELETE         {  self.DELETE-something("/organizations/$!id")             }
 }
 
 method organization($id)  { %!orgs{ $id } //=  Organization.new: :$id, :$!shared }
 method org($id)           { %!orgs{ $id } //=  Organization.new: :$id, :$!shared }
-
-class Project does RESTrole {
-    has $.id    is required ;
-
-    method GET-events        {  self.GET-something("/projects/$!id/events")         }
-    method get-events        {  self.GET-something("/projects/$!id/events")<events> }
-    method GET-devices       {  self.GET-something("/projects/$!id/devices")        }
-    method get-devices       {  self.GET-something("/projects/$!id/devices")<devices> }
-    method POST-devices(|c)  {  self.POST-something("/projects/$!id/devices", |c)   }
-    method create-device(|c) {  self.POST-something("/projects/$!id/devices", |c)   }
-    method GET               {  self.GET-something("/projects/$!id")                }
-    method get-details       {  self.GET-something("/projects/$!id")                }
-    method PUT(|c)           {  self.PUT-something("/projects/$!id", |c)            }
-    method update(|c)        {  self.PUT-something("/projects/$!id", |c)            }
-    method DELETE            {  self.DELETE-something("/projects/$!id")             }
-}
 
 method project($id)     { %!projects{ $id } //=  Project.new: :$id, :$!shared }
 
 method verify-auth {
     with self.GET-user {
         # We now have a hash of user data as topic
-        my $default-org = self.org: .<default_organization_id> ;
-        $!user = User.new:
-            :id(        .<id>       ) ,
-            :full-name( .<full_name>) ,
-            :$default-org             ;
-            # Set default project
+        $!user-id = .<id> ;
+        $!user-name = .<full_name> ;
+        $!default-org = self.org: .<default_organization_id> ;
+        # Set default project
     }
     else {
         .throw    # GET-user returns a fail object if request unsuccessfull
