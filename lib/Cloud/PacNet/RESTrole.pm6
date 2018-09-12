@@ -13,7 +13,7 @@ method GET-something($endpoint) {
 method PUT-something($endpoint, *%content) {
     self.request = HTTP::Request.new: PUT => $!shared.URL.IO.add($endpoint).Str,
                                  |$!shared.min-headers,
-                                 :Accept<application/json>  ;
+                                 :Content-Type<application/json>  ;
     self.request.add-content: to-json( %content );
     self!return-results:  $!shared.ua.request(self.request)
 }
@@ -22,7 +22,7 @@ method PUT-something($endpoint, *%content) {
 method POST-something($endpoint, *%content) {
     self.request = HTTP::Request.new: POST => $!shared.URL.IO.add($endpoint).Str,
                                  |$!shared.min-headers,
-                                 :Accept<application/json>  ;
+                                 :Content-Type<application/json>  ;
     self.request.add-content: to-json( %content );
     self!return-results:  $!shared.ua.request(self.request)
 }
