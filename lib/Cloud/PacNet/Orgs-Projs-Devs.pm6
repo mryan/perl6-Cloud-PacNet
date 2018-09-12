@@ -5,8 +5,8 @@ class Cloud::PacNet::Organization does RESTrole {
 
     method GET-projects   {  self.GET-something("/organizations/$!id/projects")              }
     method get-projects   {  self.GET-something("/organizations/$!id/projects")<projects>    }
-    method POST-projects  {  self.POST-something("/organizations/$!id/projects")             }
-    method create-project {  self.POST-something("/organizations/$!id/projects")             }
+    method POST-projects(|c) {  self.POST-something("/organizations/$!id/projects", |c)         }
+    method create-project(|c) {  self.POST-something("/organizations/$!id/projects", |c)         }
 
     method GET-devices    {  self.GET-something("/organizations/$!id/devices")               }
     method get-devices    {  self.GET-something("/organizations/$!id/devices")               }
@@ -33,5 +33,19 @@ class Cloud::PacNet::Project does RESTrole {
     method PUT(|c)           {  self.PUT-something("/projects/$!id", |c)            }
     method update(|c)        {  self.PUT-something("/projects/$!id", |c)            }
     method DELETE            {  self.DELETE-something("/projects/$!id")             }
+}
+
+
+class Cloud::PacNet::Device does RESTrole {
+    has $.id    is required ;
+
+    method GET-events        {  self.GET-something("/devices/$!id/events")         }
+    method get-events        {  self.GET-something("/devices/$!id/events")<events> }
+    method GET               {  self.GET-something("/devices/$!id")                }
+    method get-details       {  self.GET-something("/devices/$!id")                }
+    method PUT(|c)           {  self.PUT-something("/devices/$!id", |c)            }
+    method update(|c)        {  self.PUT-something("/devices/$!id", |c)            }
+    method DELETE            {  self.DELETE-something("/devices/$!id")             }
+    # IP address
 }
 

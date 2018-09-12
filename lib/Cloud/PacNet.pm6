@@ -17,6 +17,7 @@ has $.default-project ;
 
 has %!orgs ;
 has %!projects ;
+has %!devices ;
 has $!user-id ;
 has $!user-name ; 
 
@@ -48,10 +49,10 @@ method gist {
         END_HERE 
 }
 
-method organization($id)  { %!orgs{ $id } //=  Organization.new: :$id, :$!shared }
-method org($id)           { %!orgs{ $id } //=  Organization.new: :$id, :$!shared }
-
-method project($id)     { %!projects{ $id } //=  Project.new: :$id, :$!shared }
+method organization($id)  { %!orgs{ $id }     //=  Organization.new: :$id, :$!shared }
+method org($id)           { %!orgs{ $id }     //=  Organization.new: :$id, :$!shared }
+method project($id)       { %!projects{ $id } //=  Project.new: :$id, :$!shared }
+method device($id)        { %!devices{ $id }  //=  Device.new: :$id, :$!shared }
 
 method verify-auth {
     with self.GET-user {
