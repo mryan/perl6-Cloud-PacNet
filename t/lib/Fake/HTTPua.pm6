@@ -1,17 +1,19 @@
 unit class Fake::HTTPua:ver<0.0.1>;
 use HTTP::Request ;
+use URI ;
 has $.content;
 has $.status-line;
 has $.is-success;
 has $.has-content;
 has $.code;
 
-constant TestDataDir = 't/data' ;
+my $TestDataDir = 't/data/' ~ $*PROGRAM.basename.Str ;
+$TestDataDir .= substr(0, * - 2) if $TestDataDir.ends-with: '.t' ;  # Love it!
 my $counter = BagHash.new ;
 
-method !make-unique-name($m, $u is copy) {
-    $u ~~ s:i[ ^^ 'http' s? '://' ] = '' ; 
-    my $name = TestDataDir.IO.add($u).add($m).Str ;
+method !make-unique-name($m, $u) {
+    my $p = URI.new($u).path ;
+    my $name = $TestDataDir.IO.add($p).add($m).Str ;
     $name ~= ++$counter{$name} ~ '.json' ;
 }
 
