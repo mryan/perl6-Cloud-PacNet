@@ -9,7 +9,7 @@ class Cloud::PacNet::Organization does RESTrole {
     method create-project(|c) {  self.POST-something("/organizations/$!id/projects", |c)         }
 
     method GET-devices    {  self.GET-something("/organizations/$!id/devices")               }
-    method get-devices    {  self.GET-something("/organizations/$!id/devices")               }
+    method get-devices    {  self.GET-something("/organizations/$!id/devices")<devices>   }
 
     method GET            {  self.GET-something("/organizations/$!id")                }
     method get-details    {  self.GET-something("/organizations/$!id")                }
