@@ -1,36 +1,36 @@
 use JSON::Fast  ;
-use HTTP::UserAgent ;
+use HTTP::Request ;
 
 unit role RESTrole ;
-has $.shared handles <ua response request> ;
+has $.con handles <ua response request> ;
 
 method GET-something($endpoint) {
-    self.request = HTTP::Request.new: GET => $!shared.URL.IO.add($endpoint).Str, 
-                                 |$!shared.min-headers ;
-    self!return-results:  $!shared.ua.request(self.request)
+    self.request = HTTP::Request.new: GET => $!con.URL.IO.add($endpoint).Str, 
+                                 |$!con.min-headers ;
+    self!return-results:  $!con.ua.request(self.request)
 }
 
 method PUT-something($endpoint, *%content) {
-    self.request = HTTP::Request.new: PUT => $!shared.URL.IO.add($endpoint).Str,
-                                 |$!shared.min-headers,
+    self.request = HTTP::Request.new: PUT => $!con.URL.IO.add($endpoint).Str,
+                                 |$!con.min-headers,
                                  :Content-Type<application/json>  ;
     self.request.add-content: to-json( %content );
-    self!return-results:  $!shared.ua.request(self.request)
+    self!return-results:  $!con.ua.request(self.request)
 }
 
 
 method POST-something($endpoint, *%content) {
-    self.request = HTTP::Request.new: POST => $!shared.URL.IO.add($endpoint).Str,
-                                 |$!shared.min-headers,
+    self.request = HTTP::Request.new: POST => $!con.URL.IO.add($endpoint).Str,
+                                 |$!con.min-headers,
                                  :Content-Type<application/json>  ;
     self.request.add-content: to-json( %content );
-    self!return-results:  $!shared.ua.request(self.request)
+    self!return-results:  $!con.ua.request(self.request)
 }
 
 method DELETE-something($endpoint) {
-    self.request = HTTP::Request.new: DELETE => $!shared.URL.IO.add($endpoint).Str,
-                                 |$!shared.min-headers ;
-    self!return-results:  $!shared.ua.request(self.request)
+    self.request = HTTP::Request.new: DELETE => $!con.URL.IO.add($endpoint).Str,
+                                 |$!con.min-headers ;
+    self!return-results:  $!con.ua.request(self.request)
 }
 
 method !return-results($response) {

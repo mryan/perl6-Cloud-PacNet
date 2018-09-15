@@ -21,7 +21,7 @@ has %!devices ;
 has $!user-id ;
 has $!user-name ; 
 
-class Shared {
+class Connection {
     has $.ua ;
     has $.URL = 'https://api.packet.net' ;
     has %.min-headers ;
@@ -30,9 +30,9 @@ class Shared {
 }
 
 submethod TWEAK { 
-    # Setup shared data b/w this class and component classes
-    $!shared = Shared.new:  :ua($!HUA-Class.new) ,
-                            :min-headers(  
+    # Setup connection data used by this class and component classes
+    $!con = Connection.new:  :ua($!HUA-Class.new) ,
+                                :min-headers(  
                                 :X-Auth-Token($!token) ,
                                 :Accept<application/json> ,
                                 :User-Agent<perl6-Cloud::PacNet> ;
@@ -49,10 +49,10 @@ method gist {
         END_HERE 
 }
 
-method organization($id)  { %!orgs{ $id }     //=  Organization.new: :$id, :$!shared }
-method org($id)           { %!orgs{ $id }     //=  Organization.new: :$id, :$!shared }
-method project($id)       { %!projects{ $id } //=  Project.new: :$id, :$!shared }
-method device($id)        { %!devices{ $id }  //=  Device.new: :$id, :$!shared }
+method organization($id)  { %!orgs{ $id }     //=  Organization.new: :$id, :$!con }
+method org($id)           { %!orgs{ $id }     //=  Organization.new: :$id, :$!con }
+method project($id)       { %!projects{ $id } //=  Project.new: :$id, :$!con }
+method device($id)        { %!devices{ $id }  //=  Device.new: :$id, :$!con }
 
 method verify-auth {
     with self.GET-user {
