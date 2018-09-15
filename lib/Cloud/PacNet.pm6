@@ -24,7 +24,6 @@ has $!user-name ;
 
 submethod TWEAK { 
     # Setup connection data used by this class and component classes
-    $!con = Connection.instance ;
     $!con.ua = $!HUA-Class.new ;
     $!con.min-headers = :X-Auth-Token($!token) ,
                         :Accept<application/json> ,
