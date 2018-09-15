@@ -3,6 +3,7 @@ use Config::JSON '';
 use HTTP::UserAgent ;
 use Cloud::PacNet::RESTrole ;
 use Cloud::PacNet::Orgs-Projs-Devs ;
+use Cloud::PacNet::Connection ;
 
 unit class Cloud::PacNet does RESTrole ;
 
@@ -21,22 +22,13 @@ has %!devices ;
 has $!user-id ;
 has $!user-name ; 
 
-class Connection {
-    has $.ua ;
-    has $.URL = 'https://api.packet.net' ;
-    has %.min-headers ;
-    has $.response is rw ;
-    has $.request is rw ;
-}
-
 submethod TWEAK { 
     # Setup connection data used by this class and component classes
-    $!con = Connection.new:  :ua($!HUA-Class.new) ,
-                                :min-headers(  
-                                :X-Auth-Token($!token) ,
-                                :Accept<application/json> ,
-                                :User-Agent<perl6-Cloud::PacNet> ;
-                            );
+    $!con = Connection.instance ;
+    $!con.ua = $!HUA-Class.new ;
+    $!con.min-headers = :X-Auth-Token($!token) ,
+                        :Accept<application/json> ,
+                        :User-Agent<perl6-Cloud::PacNet> ;
     self.verify-auth if $!verify
 }
 
@@ -49,10 +41,10 @@ method gist {
         END_HERE 
 }
 
-method organization($id)  { %!orgs{ $id }     //=  Organization.new: :$id, :$!con }
-method org($id)           { %!orgs{ $id }     //=  Organization.new: :$id, :$!con }
-method project($id)       { %!projects{ $id } //=  Project.new: :$id, :$!con }
-method device($id)        { %!devices{ $id }  //=  Device.new: :$id, :$!con }
+method organization($id)  { %!orgs{ $id }     //=  Organization.new: :$id }
+method org($id)           { %!orgs{ $id }     //=  Organization.new: :$id }
+method project($id)       { %!projects{ $id } //=  Project.new: :$id }
+method device($id)        { %!devices{ $id }  //=  Device.new: :$id }
 
 method verify-auth {
     with self.GET-user {

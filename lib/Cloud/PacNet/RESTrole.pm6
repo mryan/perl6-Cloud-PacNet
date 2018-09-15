@@ -1,8 +1,9 @@
 use JSON::Fast  ;
 use HTTP::Request ;
+use Cloud::PacNet::Connection ;
 
 unit role RESTrole ;
-has $.con handles <ua response request> ;
+has $.con handles <ua response request> = Cloud::PacNet::Connection.instance ;
 
 method GET-something($endpoint) {
     self.request = HTTP::Request.new: GET => $!con.URL.IO.add($endpoint).Str, 
