@@ -3,6 +3,7 @@ use Config::JSON '';
 use HTTP::UserAgent ;
 use Cloud::PacNet::RESTrole ;
 use Cloud::PacNet::Orgs-Projs-Devs ;
+use Cloud::PacNet::Connection ;
 
 unit class Cloud::PacNet does RESTrole ;
 
@@ -20,14 +21,6 @@ has %!projects ;
 has %!devices ;
 has $!user-id ;
 has $!user-name ; 
-
-class Connection {
-    has $.ua ;
-    has $.URL = 'https://api.packet.net' ;
-    has %.min-headers ;
-    has $.response is rw ;
-    has $.request is rw ;
-}
 
 submethod TWEAK { 
     # Setup connection data used by this class and component classes
