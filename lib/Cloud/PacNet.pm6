@@ -81,7 +81,7 @@ method DELETE-projects($id)        { self.DELETE-something("/projects/$id")  }
 
 
 # :pn-get
-my \URL = 'https://api.packet.net' ;
+my \Host = 'https://api.packet.net'.IO ;
 our sub pn-get( :$endpoint, 
             :$token,
             :$debug = False,
@@ -93,7 +93,7 @@ our sub pn-get( :$endpoint,
     %headers<Accept>       //=  'application/json' ;
     %headers<X-Auth-Token> //=  $token // die "No token" ;
 
-    my $req = HTTP::Request.new: GET => URL.IO.add($endpoint).Str, |%headers ;
+    my $req = HTTP::Request.new: GET => Host.add($endpoint).Str, |%headers ;
 
     with $HUA-Class.new(:throw-exceptions, :$debug).request: $req  {
         $perl6 ?? 

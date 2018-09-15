@@ -6,13 +6,13 @@ unit role RESTrole ;
 has $.con = Cloud::PacNet::Connection.instance ;
 
 method GET-something($endpoint) {
-    $!con.request = HTTP::Request.new: GET => $!con.URL.IO.add($endpoint).Str, 
+    $!con.request = HTTP::Request.new: GET => $!con.host.add($endpoint).Str, 
                                  |$!con.min-headers ;
     self!return-results:  $!con.ua.request($!con.request)
 }
 
 method PUT-something($endpoint, *%content) {
-    $!con.request = HTTP::Request.new: PUT => $!con.URL.IO.add($endpoint).Str,
+    $!con.request = HTTP::Request.new: PUT => $!con.host.add($endpoint).Str,
                                  |$!con.min-headers,
                                  :Content-Type<application/json>  ;
     $!con.request.add-content: to-json( %content );
@@ -21,7 +21,7 @@ method PUT-something($endpoint, *%content) {
 
 
 method POST-something($endpoint, *%content) {
-    $!con.request = HTTP::Request.new: POST => $!con.URL.IO.add($endpoint).Str,
+    $!con.request = HTTP::Request.new: POST => $!con.host.add($endpoint).Str,
                                  |$!con.min-headers,
                                  :Content-Type<application/json>  ;
     $!con.request.add-content: to-json( %content );
@@ -29,7 +29,7 @@ method POST-something($endpoint, *%content) {
 }
 
 method DELETE-something($endpoint) {
-    $!con.request = HTTP::Request.new: DELETE => $!con.URL.IO.add($endpoint).Str,
+    $!con.request = HTTP::Request.new: DELETE => $!con.host.add($endpoint).Str,
                                  |$!con.min-headers ;
     self!return-results:  $!con.ua.request($!con.request)
 }
