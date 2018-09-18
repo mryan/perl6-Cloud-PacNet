@@ -24,12 +24,10 @@ has $!user-name ;
 
 submethod TWEAK { 
     # Setup connection data used by this class and component classes
-    $!con = Connection.new:  :ua($!HUA-Class.new) ,
-                                :min-headers(  
-                                :X-Auth-Token($!token) ,
-                                :Accept<application/json> ,
-                                :User-Agent<perl6-Cloud::PacNet> ;
-                            );
+    $!con.ua = $!HUA-Class.new ;
+    $!con.min-headers = :X-Auth-Token($!token) ,
+                        :Accept<application/json> ,
+                        :User-Agent<perl6-Cloud::PacNet> ;
     self.verify-auth if $!verify
 }
 
@@ -42,10 +40,10 @@ method gist {
         END_HERE 
 }
 
-method organization($id)  { %!orgs{ $id }     //=  Organization.new: :$id, :$!con }
-method org($id)           { %!orgs{ $id }     //=  Organization.new: :$id, :$!con }
-method project($id)       { %!projects{ $id } //=  Project.new: :$id, :$!con }
-method device($id)        { %!devices{ $id }  //=  Device.new: :$id, :$!con }
+method organization($id)  { %!orgs{ $id }     //=  Organization.new: :$id }
+method org($id)           { %!orgs{ $id }     //=  Organization.new: :$id }
+method project($id)       { %!projects{ $id } //=  Project.new: :$id }
+method device($id)        { %!devices{ $id }  //=  Device.new: :$id }
 
 method verify-auth {
     with self.GET-user {
@@ -83,7 +81,7 @@ method DELETE-projects($id)        { self.DELETE-something("/projects/$id")  }
 
 
 # :pn-get
-my \URL = 'https://api.packet.net' ;
+my \Host = 'https://api.packet.net'.IO ;
 our sub pn-get( :$endpoint, 
             :$token,
             :$debug = False,
@@ -95,7 +93,7 @@ our sub pn-get( :$endpoint,
     %headers<Accept>       //=  'application/json' ;
     %headers<X-Auth-Token> //=  $token // die "No token" ;
 
-    my $req = HTTP::Request.new: GET => URL.IO.add($endpoint).Str, |%headers ;
+    my $req = HTTP::Request.new: GET => Host.add($endpoint).Str, |%headers ;
 
     with $HUA-Class.new(:throw-exceptions, :$debug).request: $req  {
         $perl6 ?? 
