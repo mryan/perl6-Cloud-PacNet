@@ -45,6 +45,8 @@ class Cloud::PacNet::Device does RESTrole {
     method get-details       {  self.GET-something("/devices/$!id")                }
     method PUT(|c)           {  self.PUT-something("/devices/$!id", |c)            }
     method update(|c)        {  self.PUT-something("/devices/$!id", |c)            }
+    method POST-actions(|c)  {  self.POST-something("/devices/$!id/actions", |c)   }
+    method do-action(|c)     {  self.POST-something("/devices/$!id/actions", |c)   }
     method DELETE            {  self.DELETE-something("/devices/$!id")             }
     # IP address
 }
