@@ -2,6 +2,7 @@ unit class Fake::HTTPua:ver<0.0.1>;
 use HTTP::Request ;
 use URI ;
 has $.content;
+has $.content-type = 'application/json' ;
 has $.status-line;
 has $.is-success;
 has $.has-content;
